@@ -57,7 +57,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       op.image=op.image||{}; me.Bs.image=op.image;
       me.Bs.image.pc=me.Bs.image.pc||600;     // PC基本イメージ幅
       me.Bs.image.mobile=me.Bs.image.mobile||300; // mobile基本イメージ幅
-      me.Bs.image.fixPc=me,Bs.image.fixPc||600;
+      me.Bs.image.fixPc=me.Bs.image.fixPc||600;
       me.Bs.image.fixmobile=me.Bs.image.fixMobile||300;
       op.carousel=op.carousel||{}; me.Bs.carousel=op.carousel;
       me.Bs.carousel.width=op.carousel.width||'auto';  // Pcカルーセル幅
@@ -85,7 +85,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     if(me.Bs.wwi<me.Bs.minPc){me.Bs.mode='mobile';} if(me.Bs.wwi>me.Bs.maxPc){me.Bs.mode='wide';}
     if(me.Bs.mode=='wide'){me.Bs.wwi=me.Bs.maxPc;}else{me.Bs.wwi=$('body').outerWidth();}
     
-    if(mw.Bs.mode=='mobile'){
+    if(me.Bs.mode=='mobile'){
       me.Bs.scale=me.Bs.wwi/me.Bs.widthMobile;
     }else{
       me.Bs.scale=me.Bs.wwi/me.Bs.width;      // 現状スケール
