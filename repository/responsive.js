@@ -986,27 +986,13 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
     switch(mode){
      case 'init':
-      $("a.Another").on('click', function(){
+      $(".Another").on('click', function(){
         if(me.Bs.mode=='mobile'){
-          if(!document.getElementById('Bbody')){
-            $('body').append('<iframe id="Bbody"></iframe>');
-            $('body').append('<img src="'+op.close+'" alt="close" id="Bclose"/>');
-          }else{
-            $('#Bbody').html('<iframe id="Bbody"></iframe>');
-          }
-          $("#Bbody").css({
-            position:'absolute', top: t+'px', left: 0, width: w+'px', height: h+'px', 'z-index': 500
-          });
-          $("#Bbody").attr('src', $(this).href);
-          $("#Bclose").css({"border":"none","display":"none","position":"absolute"});
-          $("#Bbody").animate({top: h+'px'}, op.animate);
-          $('#Bclose').on('click', function(){
-            $("#Bbody").animate({top: h+'px'}, op.animate);
-          });
+          me.elevate('<iframe src="'+$(this).attr("href")+'"></iframe>');
         }else{
-          var wi=$(this).attr("data-width")-0; var hi=$(this).attr("data-height")-0;
-          if(!wi){wi=400;} if(!hi){hi=400;}
-          var bar=$(this).attr("data-bar"); if(bar){var x=',scrollbars=yes';}
+          var wi=$(this).attr("popWidth")-0||me.Bs.pop.width;
+          var hi=$(this).attr("popHeight")-0||me.Bs.pop.height;
+          var bar=$(this).attr("data-bar")||me.Bs.pop.bar; if(bar=='yes'){var x=',scrollbars=yes';}
           window.open($(this).attr("href"), "", "width="+wi+",height="+hi+x);
           return false;
         }
@@ -1014,9 +1000,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       return;
 
      case 'cont':
-      if($('#Bbody').html()){
-        $('#Bbody').css({width: 0, height: 0, top: h+'px', 'z-index': 0});
-      }
+        if(me.Bs.mode=='mobile'){me.elevate('');}
       return;
     }
   },
@@ -1308,14 +1292,21 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
         }
       });
     }
-    t=$(window).height();
-    $('#Elevate').css({position: 'absolute', top: t+'px', left: 0, 'z-index': 800});
-    $('#Elevate').html('<img id="Eclise" src="'+me.pngclose+'"/>'+html);
-    l=$(window).width()-$('#Eclose').outerWidth();
-    $('#Eclose').css({position: 'absolute', top: 0, left: l+'px', 'z-index': 810});
-    t=t-$('#Elevate').height();
-    $('#Elevate').stop(); $('#Elevate').animate({top: t+'px'}, animate);
-    $('#Elevate').attr('state', 'on');
+    if(html==''){
+      if($('#Elevate').attr('state')=='on'){
+        t=$(window).height(); $('#Elevate').css({top: t+'px'});
+        $('#Elevate').attr('state', ''); $('#Elevate').html('');
+      }
+    }else{
+      t=$(window).height();
+      $('#Elevate').css({position: 'absolute', top: t+'px', left: 0, 'z-index': 800});
+      $('#Elevate').html('<img id="Eclise" src="'+me.pngclose+'"/>'+html);
+      l=$(window).width()-$('#Eclose').outerWidth();
+      $('#Eclose').css({position: 'absolute', top: 0, left: l+'px', 'z-index': 810});
+      t=t-$('#Elevate').height();
+      $('#Elevate').stop(); $('#Elevate').animate({top: t+'px'}, animate);
+      $('#Elevate').attr('state', 'on');
+    }
   },
 //
 //modal モーダルスクリーン
