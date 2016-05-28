@@ -9,7 +9,8 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     $(window).on('load', function(){
       
       me.config(op, 'init'); me.section('init');
-      me.depend(); me.image('init'); me.hide(); me.cell(); me.zone(); me.body('init');
+      me.depend(); me.image('init'); me.hide(); me.cell(); me.section('padding');
+      me.zone(); me.body('init');
       me.section('position');
       me.another('init');
       me.footer('init');
@@ -17,7 +18,8 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       $(window).on('resize', function(){
         me.config();
         me.carousel('image'); me.tabs('cont'); me.accordion('cont');
-        me.depend(); me.image(); me.hide(); me.cell(); me.zone(); me.body();
+        me.depend(); me.image(); me.hide(); me.cell(); me.section('padding');
+        me.zone(); me.body();
         me.map('cont');
         me.another('cont');
         me.footer();
@@ -141,7 +143,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     me.css($('#Side'), {outerHeight: h1}); me.css($('#Content'), {outerHeight: h1});
     main=h1;
 
-    me.Bs.shrinkHeight=0; top=0; fixed=0;
+    me.Bs.shrinkHeight=0; me.Save.fixedTop=0; top=0; fixed=0;
     $('body').children().each(function(){
       $(this).css({height: 'auto'});
       if($(this).css('display')=='none'){hi=0;}else{hi=$(this).outerHeight();}
@@ -152,7 +154,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
           'z-index': 500, position: 'fixed', top: top+'px', left: lf+'px',
           width: wi+'px', height: hi+'px'
         });
-        top=top+hi; me.Save.fixedTop=top; fixed=fixed+hi;
+        top=top+hi; me.Save.fixedTop+=hi; fixed=fixed+hi;
         break;
        case 'Behind':
         $(this).css({
@@ -174,7 +176,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
           width: wi+'px', height: hi+'px'
         });
         $(this).attr('save', top); top=top+hi;
-        $(this).attr('fixed', fixed); fixed=fixed+hi;
+        $(this).attr('fixed', fixed); fixed=fixed+hi; me.Save.fixedTop+=hi;
         break;
        default:
         if(tag=='main'){hi=main;}
@@ -798,6 +800,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
             dl.find('dd').slideUp(vi); dl.attr('state', 'close'); s=me.insert(s, '_r');
           }
           dt.find('img').attr('src', s);
+          me.section('position');
         });
       });
     };
@@ -1024,7 +1027,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 //
 // セクションガイド(#Posvar)
 //ok
-  section: function(mode, x, direct){
+  section: function(mode, pos, direct){
     var me=this; var id, p, t, i, out;
     
     switch(mode){
@@ -1033,11 +1036,13 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
                                     // 初期化
       $('#Posvar').each(function(){
         out='<ul>';
+        var now='now';
         $('section').each(function(){
           id='#'+$(this).attr('id'); t=$(this).find('h2').html();
           if(t){
             p=t.search(/\//); if(p>0){t=t.substr(0, p);}
-            out+='<li><a href="'+id+'">'+t+'</a></li>';
+            out+='<li class="'+now+'"><a href="'+id+'">'+t+'</a></li>';
+            now='';
             if(!me.Sec[id]){me.Sec[id]={};} me.Sec[id].title=t;
           }else{
             console.log('<h2>tag not found');
@@ -1059,7 +1064,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
       i=0; $('section').each(function(){
         k='#'+$(this).attr('id');
-        if(k=='#top'){y=0;}else{y=$(k).position().top+$('#headerimg').outerHeight();}
+        if(k=='#top'){y=0;}else{y=$(k).position().top+$('main').position().top-me.Save.fixedTop;}
         me.Sec[k].pos=y; me.Sec[k].index=i; i++;
       });
       return;
@@ -1068,9 +1073,10 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
                                       // セクションのポジショニング
       var tag, ix, f;
       if(navigator.userAgent.toLowerCase().indexOf('applewebkit')>0){tag='body';}else{tag='html';}
-      if(x.charAt(0)=='#'){
-        me.Now=x;
-        var y; if(x=='#Top'){y=0;}else{y=$(x).position().top+me.Bs.shrinkHeight;}
+      if(pos.charAt(0)=='#'){
+        me.Now=pos;
+        var y;
+        if(pos=='#Top'){y=0;}else{y=$(pos).position().top+$('main').position().top-me.Save.fixedTop;}
         if(direct){$(tag).scrollTop(y);}
         else{$('body').animate({"scrollTop": y}, me.Bs.animateScroll, "swing");}
       }
@@ -1078,16 +1084,25 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
      case 'indicator':
                                       // ガイド表示
-      var i, k, d, s, j, f;
+      var i, k, d, s, j, f, y;
       d=Math.floor($(window).height()/2);
       s='#Top'; j=0; f=true; i=0;
       for(k in me.Sec){
         $('#Posvar').find('li').eq(i).attr('class', '');
-        if(x+d<me.Sec[k].pos){f=false;} if(f){s=k; j=i;}
+        y=$(k).position().top+$('main').position().top-me.Save.fixedTop;
+        if(pos<y){f=false;} if(f){s=k; j=i;}
         i++;
       }
       $('#Posvar').find('li').eq(j).attr('class', 'now');
       me.Now=s;
+      return;
+
+     case 'padding' :
+      
+      $('section').each(function(){
+        $(this).css({"padding-bottom": Math.floor($(window).height()/2)+"px"});
+      });
+
       return;
 
     }
