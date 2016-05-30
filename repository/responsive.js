@@ -1034,6 +1034,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
      case 'init':
                                     // 初期化
+      me.Save.section=false;
       $('#Posvar').each(function(){
         out='<ul>';
         var now='now';
@@ -1050,7 +1051,8 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
           }
         });
         out+='</ul>';
-        $(this).html(out);
+        $('#Posvar').html(out);
+        me.Save.section=true;
       });
 
       $("#Posvar a").click(function(){
@@ -1062,6 +1064,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
      case 'position':
 
+      if(!me.Save.section){return;}
       i=0; $('section').each(function(){
         k='#'+$(this).attr('id');
         if(k=='#top'){y=0;}else{y=$(k).position().top+$('main').position().top-me.Save.fixedTop;}
@@ -1071,6 +1074,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
      case 'goto':
                                       // セクションのポジショニング
+      if(!me.Save.section){return;}
       var tag, ix, f;
       if(navigator.userAgent.toLowerCase().indexOf('applewebkit')>0){tag='body';}else{tag='html';}
       if(pos.charAt(0)=='#'){
@@ -1084,6 +1088,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
      case 'indicator':
                                       // ガイド表示
+      if(!me.Save.section){return;}
       var i, k, d, s, j, f, y;
       d=Math.floor($(window).height()/2);
       s='#Top'; j=0; f=true; i=0;
@@ -1099,6 +1104,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
      case 'padding' :
       
+      if(!me.Save.section){return;}
       $('section').each(function(){
         $(this).css({"padding-bottom": Math.floor($(window).height()/2)+"px"});
       });
