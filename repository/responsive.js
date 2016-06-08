@@ -1,3 +1,4 @@
+var _gaq = _gaq || [];
 var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 //
 // begin トリガー
@@ -6,33 +7,37 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     var me=this; op=op||{};
 
     if(op.loadConfig){op=me.loadConfig(op);}
+
     $(window).on('load', function(){
-      
-      me.config(op, 'init'); me.section('init');
-      me.depend(); me.image('init'); me.hide(); me.cell(); me.section('padding');
+
+      me.config(op, 'init'); me.section('init'); me.spanning(); me.ajaxSource();
+      me.carousel('init'); me.tabs('init'); me.accordion('init'); me.sns(); me.analytics();
+      me.depend(); me.image('init'); me.hide();
+      me.cell(); me.section('padding'); me.folding('init');
       me.zone(); me.body('init');
       me.section('position');
       me.another('init');
-      me.footer('init');
+      me.footer('init', 0);
 
       $(window).on('resize', function(){
-        me.config();
+        me.config(); me.spanning();
         me.carousel('image'); me.tabs('cont'); me.accordion('cont');
-        me.depend(); me.image(); me.hide(); me.cell(); me.section('padding');
-        me.zone(); me.body();
+        me.depend(); me.image(); me.hide(); me.cell(); me.section('padding'); me.folding();
+        me.zone(); me.body(); me.scroll();
         me.map('cont');
         me.another('cont');
-        me.footer();
+        me.footer('resize', $(window).scrollTop());
         me.Save.mode=me.Bs.mode;
       });
 
       $(window).on('scroll', function(){
         var pos=me.scroll(); me.footer('cont', pos); me.section('indicator', pos);
+        me.locateSide('cont', pos);
         me.modal('reset');
       });
 
-      me.photoUp(); me.tipup(); me.carousel('init'); me.tabs('init'); me.accordion('init');
-      me.map('init'); me.rollover(); me.modal('init');
+      me.photoUp(); me.tipup();
+      me.map('init'); me.rollover(); me.modal('init'); me.locateSide('init');
 
       me.Save.mode=me.Bs.mode;
 
@@ -45,47 +50,79 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     var me=this;
 
     if(mode=='init'){
-      me.Bs.minPc=op.minPc||750;              // PC表示最小幅
-      me.Bs.maxPc=op.maxPc||1200;             // PC表示最大幅
-      me.Bs.width=op.width||1050;             // 設計基本幅(パソコン)
-      me.Bs.widthMobile=op.widthMobile||400;  // 設計基本幅(モバイル)
-      me.Bs.main=op.maxMain||800;             // 設計基本メイン幅
-      me.Bs.minSide=op.minSide||200;          // 最小サイド幅
-      me.Bs.animate=op.animate||1000;         // 基本アニメートタイム
-      me.Bs.interval=op.interval||2000;       // 基本インターバルタイム
-      me.Bs.opacity=op.opacity||0.7;          // 基本透過度
-      me.Bs.cellPc=op.cellPc||200;            // Pcセル幅
-      me.Bs.cellMobile=op.cellMobile||120;    // Mobileセル幅
-      op.image=op.image||{}; me.Bs.image=op.image;
+      me.Bs.minPc=op.MinPc||750;              // PC表示最小幅
+      me.Bs.maxPc=op.MaxPc||1200;             // PC表示最大幅
+      me.Bs.width=op.Width||1050;             // 設計基本幅(パソコン)
+      me.Bs.widthMobile=op.WidthMobile||400;  // 設計基本幅(モバイル)
+      me.Bs.maxMain=op.MaxMain||800;             // 設計基本メイン幅
+      me.Bs.minSide=op.MinSide||200;          // 最小サイド幅
+      me.Bs.animate=op.Animate||1000;         // 基本アニメートタイム
+      me.Bs.interval=op.Interval||2000;       // 基本インターバルタイム
+      me.Bs.parallax=me.Bs.parallax||0.5;     // 視差スピード比
+      me.Bs.opacity=op.Opacity||0.7;          // 基本透過度
+      me.Bs.locateSide=op.LocateSide||'no';
+      me.Bs.domain=op.Domain||location.hostname.substr(4);
+      me.Bs.cell=op.Cell||{};
+      me.Bs.cell.priority=me.Bs.cell.priority||'width'; //優先モード
+      me.Bs.cell.pc=me.Bs.cell.pc||200;       // Pcセル幅
+      me.Bs.cell.mobile=me.Bs.cell.mobile||120; // Mobileセル幅
+      me.Bs.cell.base=me.Bs.cell.base||120; // セル幅基準
+      me.Bs.cell.max=me.Bs.cell.max||5; // 横並び最大個数
+      me.Bs.cell.min=me.Bs.cell.min||2; // 横並び最小個数
+      me.Bs.section=op.Section||{};
+      me.Bs.section.mobile=me.Bs.section.mobile||'vertical';
+      me.Bs.section.wide=me.Bs.section.wide||'no';
+      me.Bs.image=op.Image||{};
       me.Bs.image.pc=me.Bs.image.pc||600;     // PC基本イメージ幅
       me.Bs.image.mobile=me.Bs.image.mobile||300; // mobile基本イメージ幅
       me.Bs.image.fixPc=me.Bs.image.fixPc||600;
       me.Bs.image.fixmobile=me.Bs.image.fixMobile||300;
-      op.carousel=op.carousel||{}; me.Bs.carousel=op.carousel;
-      me.Bs.carousel.width=op.carousel.width||'auto';  // Pcカルーセル幅
-      me.Bs.carousel.pc=op.carousel.pc||300;  // Pcカルーセル画像幅
-      me.Bs.carousel.mobile=op.carousel.mobile||200; // Mobileカルーセル画像幅
-      me.Bs.carousel.num=op.carousel.num||3;  // カルーセル表示個数
-      me.Bs.carousel.direction=op.carousel.direction||'H';  // カルーセル移動方向
-      me.Bs.carousel.animate=op.carousel.animate||me.Bs.animate;
-      me.Bs.carousel.interval=op.carousel.interval||me.Bs.interval;
-      me.Bs.carousel.priority=op.carousel.priority||'width'; //優先順位, width, num
-      me.Bs.tabs=op.tabs||{};
-      me.Bs.accordion=op.accordion||{};
-      me.Bs.map=op.map||{};
-      op.footer=op.footer||{}; me.Bs.footer=op.footer||{};
-      me.Bs.footer.remain=op.footer.remain||0;
-      me.Bs.footer.rate=op.footer.rate||80;
-      me.Bs.footer.animate=op.footer.animate||me.Bs.animate;
-      op.tipup=op.tipup||{}; me.Bs.tipup=op.tipup;
+      me.Bs.image.photoM=me.Bs.image.PhotoM||'auto';
+      me.Bs.image.open=me.Bs.image.open||'/image/bg_open.png';
+      me.Bs.image.close=me.Bs.image.close||'/image/bg_close.png';
+      me.Bs.image.none=me.Bs.image.none||'/image/bg_none.png';
+      me.Bs.carousel=op.Carousel||{};
+      me.Bs.carousel.width=me.Bs.carousel.width||'auto';  // Pcカルーセル幅
+      me.Bs.carousel.pc=me.Bs.carousel.pc||300;  // Pcカルーセル画像幅
+      me.Bs.carousel.mobile=me.Bs.carousel.mobile||200; // Mobileカルーセル画像幅
+      me.Bs.carousel.num=me.Bs.carousel.num||3;  // カルーセル表示個数
+      me.Bs.carousel.direction=me.Bs.carousel.direction||'H';  // カルーセル移動方向
+      me.Bs.carousel.animate=me.Bs.carousel.animate||me.Bs.animate;
+      me.Bs.carousel.interval=me.Bs.carousel.interval||me.Bs.interval;
+      me.Bs.carousel.priority=me.Bs.carousel.priority||'width'; //優先順位, width, num
+      me.Bs.sns=op.Sns||{};
+      me.Bs.sns.width=me.Bs.sns.width||500;
+      me.Bs.sns.height=me.Bs.sns.height||500;
+      me.Bs.sns.option=me.Bs.sns.option||'personalbar=0,toolbar=0,scrollbars=1,resizable=1';
+      me.Bs.tab=op.Tab||{};
+      me.Bs.tab.animate=me.Bs.tab.animate||me.Bs.animate;
+      me.Bs.accordion=op.Accordion||{};
+      me.Bs.accordion.image=me.Bs.accordion.image||'/image/sign.png';
+      me.Bs.accordion.mobile=me.Bs.accordion.mobile||me.Bs.accordion.image;
+      me.Bs.accordion.animate=me.Bs.accordion.animate||me.Bs.animate;
+      me.Bs.map=op.Map||{};
+      me.Bs.footer=op.Footer||{};
+      me.Bs.footer.remain=me.Bs.footer.remain||0;
+      me.Bs.footer.rate=me.Bs.footer.rate||80;
+      me.Bs.footer.animate=me.Bs.footer.animate||me.Bs.animate;
+      me.Bs.tipup=op.Tipup||{};
       me.Bs.tipup.xdiff=me.Bs.tipup.xdiff||30;
       me.Bs.tipup.ydiff=me.Bs.tipup.ydiff||30;
-      me.Bs.animateScroll=op.animateScroll||op.animate;
+      me.Bs.scroll=op.Scroll||{};
+      me.Bs.scroll.animate=me.Bs.scroll.animate||me.Bs.animate;
+      me.Bs.analytics=op.Analytics||{};
+      me.Bs.analytics.index=me.Bs.analytics.index||1;
+      me.Bs.analytics.name=me.Bs.analytics.name||'key';
+      me.Bs.analytics.value=me.Bs.analytics.value||'';
+      me.Bs.analytics.scope=me.Bs.analytics.scope||3;
     }
+
+
     me.Bs.wwi=$(window).width();
     me.Bs.mode='pc';                          // 現状モード
     if(me.Bs.wwi<me.Bs.minPc){me.Bs.mode='mobile';} if(me.Bs.wwi>me.Bs.maxPc){me.Bs.mode='wide';}
-    if(me.Bs.mode=='wide'){me.Bs.wwi=me.Bs.maxPc;}else{me.Bs.wwi=$('body').outerWidth();}
+    if(me.Bs.mode=='wide' && me.Bs.section.wide=='no'){me.Bs.wwi=me.Bs.maxPc;}
+    else{me.Bs.wwi=$('body').outerWidth();}
     
     if(me.Bs.mode=='mobile'){
       me.Bs.scale=me.Bs.wwi/me.Bs.widthMobile;
@@ -107,37 +144,136 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     return out;
   },
 //
-// zone: Content, Sideゾーン制御
-//ok
-  zone: function(){
-    var me=this; var d; var wm, ws, wi;
+//
+//
+  spanning: function(){
+    var me=this; var wi, wm, ws;
 
-    if(me.Bs.mode=='wide'){wi=me.Bs.maxPc;}else{wi=$('body').outerWidth();}
+    switch(me.Bs.mode){
+     case 'mobile':
+      wi=$(window).width(); wm=wi; ws=0; 
+      break;
+     case 'pc':
+      wi=$(window).width();
+      if(wi-me.Bs.minSide>me.Bs.maxMain){ws=wi-me.Bs.maxMain;}else{ws=me.Bs.minSide;}
+      wi=wi-ws; wm=wi;
+      break;
+     case 'wide':
+      if(me.Bs.section.wide=='yes'){wi=$(window).width();}else{wi=me.Bs.maxPc;}
+      if(wi-me.Bs.minSide>me.Bs.maxMain){ws=wi-me.Bs.maxMain;}else{ws=me.Bs.minSide;}
+      wm=wi-ws;
+      if(me.Bs.section.wide=='yes'){wi=Math.floor((wm-10)/2);}else{wi=wm;}
+      break;
+    }
+    $('#Content').find('section').each(function(){me.css($(this), {outerWidth: wi+'px'});});
+    $('main').css({margin: 0});
+    return {main: wm, sub: ws};
+  },
+//
+// zone: Content, Sideゾーン制御
+//
+  zone: function(){
+    var me=this; var d; var wm, ws, wi, ml, oh, num, wk, l, h, i, t, w, a;
+////
+//    padding
+    var padding=function(wi){
+      var pb=Math.floor($(window).height()/2); var hi=0;
+      if(me.Bs.mode=='wide' && me.Bs.section.wide=='yes'){wi=Math.floor((wi-10)/2);}
+      $('#Content').find('section').each(function(){
+        me.css($(this), {height: 'auto', margin: 0, 'padding-bottom': pb+'px'});
+        if($(this).outerHeight()>hi){hi=$(this).outerHeight();}
+      });
+      return {wi: wi, hi: hi};
+    };
+////
+////
+    if(me.Bs.mode=='wide' && me.Bs.section.wide=='no'){wi=me.Bs.maxPc;}
+    else{wi=$('body').outerWidth();}
 
     if(me.Bs.mode=='mobile'){
       wm=$(window).width();
-      $('#Side').css({display: 'none'}); me.css('#Content', {outerWidth: wm});
+      $('#Side').css({display: 'none'});
+      if(me.Bs.section.mobile=='horizontal'){
+        wk=padding(wm);
+        l=0; h=0; i=0; num=0; $('#Content').find('section').each(function(){
+          me.css($(this), {position: 'absolute', top: 0, left: l+'px', outerHeight: wk.hi+'px'});
+          l=l+$(window).width();
+          if(h<$(this).outerHeight()){h=$(this).outerHeight();}
+        num++;});
+        wm=wm*num; me.css('#Content', {outerWidth: wm, outerHeight: wk.hi});
+      }else{
+        wk=padding(wm);
+        t=0; $('#Content').find('section').each(function(){
+          h=$(this).outerHeight();
+          me.css($(this), {position: 'absolute', top: t+'px', left: 0, outerHeight: h});
+          t=t+h;
+        });
+        me.css('#Content', {outerWidth: wm, outerHeight: t+'px'});
+      }
+      $('#Side').css({height: 0});
+
     }else{
       if(wi-me.Bs.minSide>me.Bs.maxMain){ws=wi-me.Bs.maxMain;}else{ws=me.Bs.minSide;}
       wm=wi-ws;
-      me.css("#Content", {position: "absolute", top: 0, left: 0, outerWidth: wm});
-      me.css("#Side", {display: 'block', position: "absolute", top: 0, left: wm+"px", outerWidth: ws});
+      wk=padding(wm);
+      if(me.Bs.mode=='wide' && me.Bs.section.wide=='yes'){
+        i=0; f=true; a=[]; num=0; $('#Content').find('section').each(function(){
+          h=$(this).outerHeight();
+          if(f){a[i]=h; f=false;}else{if(h>a[i]){a[i]=h;} i++; f=true;}
+        num++;});
+        var f=true; t=0; i=0; $('#Content').find('section').each(function(){
+          if(f){l=0; ml=0;}else{l=wk.wi; ml=10;}
+          me.css($(this), {
+            position: 'absolute', top: t+'px', left: l+'px',
+            outerHeight: a[i]+'px', 'margin-left': ml+'px'
+          });
+          if(f){f=false;}else{f=true; t=t+a[i]; i++;}
+        });
+        oh=0; for(i in a){oh=oh+a[i];}
+        me.css('#Content', {outerHeight: oh+'px'});
+      }else{
+        padding(wm);
+        t=0; num=0; $('#Content').find('section').each(function(){
+          h=$(this).outerHeight();
+          me.css($(this), {position: 'absolute', top: t+'px', left: 0, outerHeight: h});
+          t=t+h;
+        num++;});
+        me.css('#Content', {outerWidth: wm, outerHeight: t+'px'});
+      }
+
+      $('#Side').css({height: 'auto'});
+      oh=$('#Content').outerHeight();
+      if($('#Side').outerHeight()>oh){oh=$('#Side').outerHeight();}
+      me.css("#Content", {position: "absolute", top: 0, left: 0, outerWidth: wm,
+        outerHeight: oh
+      });
+      me.css("#Side", {
+        display: 'block', position: "absolute", top: 0, left: wm+"px", outerWidth: ws,
+        outerHeight: oh
+      });
     }
+
+    if(!me.Save.zone){if(me.Bs.section.mobile=='horizontal'){
+      me.Fdata.section={area: $('main'), max: num, modal: false};
+      me.flick(me.Fdata.section, function(data){me.section('indicator.mb', data);});
+      me.Save.zone=true;
+    }}
+
   },
 //
 // body フレームワーク
 //
   body: function(mode){
-    var me=this; var hi, wi, f, x, lf, r, top, fixed, tag, main, area=true;
+    var me=this; var hi, wi, f, x, lf, r, v, top, fixed, tag, main, area=true;
 
     lf=0;
-    if(me.Bs.mode=='wide'){
+    if(me.Bs.mode=='wide' && me.Bs.section.wide!='yes'){
       lf=Math.floor(($(window).width()-me.Bs.maxPc)/2);
       wi=me.Bs.maxPc;
     }else{
       wi=$('body').outerWidth();
     }
- 
+
     var h1=$('#Content').outerHeight(); var h2=$('#Side').outerHeight();
     if(h1<h2){h1=h2;}
     me.css($('#Side'), {outerHeight: h1}); me.css($('#Content'), {outerHeight: h1});
@@ -145,85 +281,68 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
     me.Bs.shrinkHeight=0; me.Save.fixedTop=0; top=0; fixed=0;
     $('body').children().each(function(){
+      tag=$(this)[0].localName;
       $(this).css({height: 'auto'});
       if($(this).css('display')=='none'){hi=0;}else{hi=$(this).outerHeight();}
-      tag=$(this)[0].localName;
       switch($(this).attr('pos')){
        case 'Fix':
-        $(this).css({
+        me.css($(this), {
           'z-index': 500, position: 'fixed', top: top+'px', left: lf+'px',
-          width: wi+'px', height: hi+'px'
+          width: wi+'px', outerHeight: hi+'px'
+        });
+        top=top+hi; me.Save.fixedTop+=hi; fixed=fixed+hi;
+        break;
+       case 'Under':
+        hi=0;
+        me.css($(this), {
+          'z-index': 500, position: 'fixed', top: top+'px', left: lf+'px',
+          width: wi+'px', outerHeight: hi+'px'
         });
         top=top+hi; me.Save.fixedTop+=hi; fixed=fixed+hi;
         break;
        case 'Behind':
-        $(this).css({
+        me.css($(this), {
           'z-index': 0, position: 'fixed', top: top+'px', left: lf+'px',
-          width: wi+'px', height: hi+'px'
+          width: wi+'px', outerHeight: hi+'px'
         });
         top=top+hi; me.Bs.shrinkHeight+=hi;
         break;
        case 'Parallax':
-        $(this).css({
+        me.css($(this), {
           'z-index': 0, position: 'absolute', top: top+'px', left: lf+'px',
-          width: wi+'px', height: hi+'px'
+          width: wi+'px', outerHeight: hi+'px'
         });
         $(this).attr('save', top); top=top+hi; me.Bs.shrinkHeight+=hi;
+        v=$(this).attr('speed')||me.Bs.parallax; $(this).attr('speed', v-0);
         break;
        case 'Remain':
-        $(this).css({
+        me.css($(this), {
           'z-index': 500, position: 'absolute', top: top+'px', left: lf+'px',
-          width: wi+'px', height: hi+'px'
+          width: wi+'px', outerHeight: hi+'px'
         });
         $(this).attr('save', top); top=top+hi;
         $(this).attr('fixed', fixed); fixed=fixed+hi; me.Save.fixedTop+=hi;
         break;
        default:
         if(tag=='main'){hi=main;}
-        if(area){
-          $(this).css({
+        if(area && tag!='a'){
+          me.css($(this), {
             'z-index': 1, position: 'absolute', top: top+'px', left: lf+'px',
-            width: wi+'px', height: hi+'px'
+            width: wi+'px', outerHeight: hi+'px'
           });
           $(this).attr('save', top);
           top=top+hi;
         }
       }
-      if(tag=='footer'){
-        if(me.Bs.footer.remain>0){
-          $('main').css({height: $('main').outerHeight()+$('footer').outerHeight()+'px'});
-        }
-        area=false;
-      }
+      if(tag=='footer'){area=false;}
     });
-
-  },
-//
-// scroll スクロール移動
-//
-  scroll: function(){
-    var me=this; var t, n, d;
-    
-    var p=$(window).scrollTop();
-    $('body').children().each(function(){
-      switch($(this).attr('pos')){
-       case 'Parallax':
-        t=$(this).attr('save')-0; n=t+(p/2); $(this).css({top: n+'px'});
-        break;
-       case 'Remain':
-        t=$(this).attr('save')-0; d=$(this).attr('fixed')-0;
-        if(p>t-d){n=p+d}else{n=t;} $(this).css({top: n+'px'});
-        break;
-      }
-    });
-    return p;    
   },
 //
 // footer フッタの位置調整
 //
   footer: function(mode, pos){
     var me=this;
-    var t, h, l, w={};
+    var t, h, l, d, w={};
 
     if(mode=='init'){
       $('footer').css({'z-index': 700});
@@ -272,16 +391,41 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       w.ypos=pos+$(window).height()-me.Bs.shrinkHeight;
       w.limit=$('footer').attr('save')-0-me.Bs.shrinkHeight;
       w.usual=$(window).height()-me.Bs.footer.remain;
-      if(me.Bs.footer.remain==0 || w.limit<w.ypos){
+      if(me.Bs.footer.remain==0 || w.limit<=w.ypos){
+        d=$('footer').attr('save')-me.Bs.footer.remain;
         $('footer').css({
-          position: 'absolute', top: $('footer').attr('save')+'px', width: me.Bs.wwi+'px',
-          'margin-left': 0
+          position: 'absolute', top: d+'px', width: me.Bs.wwi+'px',
+          height: 'auto', 'margin-left': 0
         });
       }else{
         $('footer').css({position: 'fixed', top: w.usual+'px', 'margin-left': 0});
       }
     }
 
+  },
+//
+// scroll スクロール移動
+//
+  scroll: function(){
+    var me=this; var t, n, d;
+    
+    var p=$(window).scrollTop();
+    $('body').children().each(function(){
+      switch($(this).attr('pos')){
+       case 'Parallax':
+        t=$(this).attr('save')-0; n=t+($(this).attr('speed')-0)*p; $(this).css({top: n+'px'});
+        break;
+       case 'Remain':
+        t=$(this).attr('save')-0; d=$(this).attr('fixed')-0;
+        if(p>t-d){
+          $(this).css({position: 'fixed', top: d+'px'});
+         }else{
+          $(this).css({position: 'absolute', top: t+'px'});
+        }
+        break;
+      }
+    });
+    return p;    
   },
 //
 // depend: Dependクラス対応
@@ -313,10 +457,42 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 // image: 画像大きさ制御
 //
   image: function(mode){
-    var me=this; var w, e, p, obj={};
+    var me=this; var w, h, e, p, m, t, l, x, y, obj={};
     
                                             // 全幅
-    $('.PhotoF').each(function(){$(this).css({width: me.Bs.wwi+'px'});});
+    $('.PhotoF').each(function(){
+      if(me.Bs.wwi>me.Bs.maxPc){
+        m=Math.floor((me.Bs.wwi-me.Bs.maxPc)/2);
+        $(this).css({width: me.Bs.maxPc+'px', margin: '0 '+m+'px'});
+      }else{
+        $(this).css({width: me.Bs.wwi+'px', margin: 0});
+      }
+    });
+                                            // モバイル
+    $('.PhotoG').each(function(){
+      if(!$(this).attr('sizeX')){
+        $(this).attr('sizeX', $(this).width()); $(this).attr('sizeY', $(this).height());
+        $(this).parent().eq(0).append('<div id="PG" style="overflow: hidden"></div>');
+        $(this).appendTo('#PG');
+      }
+      if(me.Bs.wwi>me.Bs.maxPc){
+        m=Math.floor((me.Bs.wwi-me.Bs.maxPc)/2); l=0; t=0;
+        $(this).css({width: me.Bs.maxPc+'px', margin: '0 '+m+'px'});
+      }else if(me.Bs.wwi<me.Bs.minPc){
+        x=Math.floor($(this).attr('sizeX')*$(this).attr('zoom'));
+        l=Math.floor(me.Bs.wwi*$(this).attr('gravityX')-x*0.5);
+        y=Math.floor($(this).attr('sizeY')*$(this).attr('zoom'));
+        h=Math.floor($(this).attr('sizeY')*me.Bs.wwi/$(this).attr('sizeX'));
+        t=Math.floor(h*$(this).attr('gravityY')-y*0.5);
+        $(this).css({width: w+'px', 'margin-top': t+'px', 'margin-left': l+'px'});
+      }else{
+        l=0; t=0;
+        $(this).css({width: me.Bs.wwi+'px', margin: 0});
+      }
+      w=me.Bs.wwi;
+      h=Math.floor($(this).attr('sizeY')*w/$(this).attr('sizeX'));
+      $(this).parent().eq(0).css({width: w+'px', height: h+'px'});
+    });
                                             // 親幅幅合わせ
     $(".PhotoP").each(function(){
       w=0; e=$(this);
@@ -337,8 +513,8 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       }
     });
                                             // モバイル100%
-    $('.PhotoM, .PhotoU').each(function(){
-      if(me.Bs.mode=='mobile'){w='100%';}else{w='auto';}
+    $('.PhotoM, .PhotoU, photoM, photoU').each(function(){
+      if(me.Bs.mode=='mobile'){w='100%';}else{w=me.Bs.image.photoM;}
       $(this).css({width: w});
     });
                                             // ２段階調整
@@ -361,26 +537,76 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       }
       $(this).css({width: w+'px'});
     });
+                                    // 写真の大きさを調整する(size:750)
+    $(".PhotoL, .photoL").each(function(){
+      w=0; e=$(this);
+      while(w==0){
+        e=e.parent();
+        if(e[0].tagName=='DIV' || e[0].tagName=='SECTION'){f=false; w=e.width();}
+        if(w!=0){me.css($(this), {outerWidth: w});}
+        if(e[0].tagName=='BODY'){w=-1;}
+      }
+    });
+  },
+//
+// locateSide サイドコンテンツの自動セクション位置づけ
+//
+  locateSide: function(mode, pos){
+    var me=this;
+    
+    if(me.Bs.locateSide=='yes'){
+      var d, k, l, p, h, s='top';
+      if(mode=='init'){
+        me.Save.sidepad=parseInt($('#Side').css('padding-top'))-0;
+      }else{
+        d=Math.floor($(window).height()/2);
+        for(k in me.Sec){if(pos+d<me.Sec[k].pos){break;} s=k;}
+        if(s=='#Top'){p=me.Save.sidepad;}else{p=me.Sec[s].pos-me.Bs.shrinkHeight+me.Save.sidepad;}
+        var h=$('#Side').outerHeight();
+        $('#Side').css({'padding-top': p+'px'});
+        me.css($('#Side'), {outerHeight: h});
+      }
+    }
+
   },
 //
 // cell: セルの幅・高さ調整
 //ok
   cell: function(){
-    var me=this; var w, m, h, max; if(me.Bs.mode==me.Save.mode){return;}
+    var me=this; var w, m, h, max, min, s, i, l, r, p;
 
     $('.Cell').each(function(){
+      p=$(this).attr('priority')||me.Bs.cell.priority;
+      if(p=='number'){
+        w=$(this).attr('base')||me.Bs.cell.base;
+        min=$(this).attr('min')||me.Bs.cell.min;
+        max=$(this).attr('max')||me.Bs.cell.max;
+        n=Math.floor($(this).width()/w);
+        if(n<min){n=min;} if(n>max){n=max;}
+        w=Math.floor($(this).width()/n);
+        s=Math.floor(($(this).width()-w*n)/2);
+        
+        max=0; i=1; $(this).children().each(function(){
+          r=0; l=0; if(i==1){l=s;} if(i==n){r=s;}
+          $(this).css({'margin-left': l+'px', 'margin-right': r+'px', width: w+'px'});
+          $(this).css({float: 'left'});
+          h=$(this).height(); if(h>max){max=h;}
+          i++; if(i>n){i=1;}
+        });
+        $(this).children().each(function(){$(this).css({height: max+'px'});});
+      }else{
+        if(me.Bs.mode=='mobile'){w=$(this).attr('mobile')||me.Bs.cell.mobile;}
+        else{w=$(this).attr('pc')||me.Bs.cell.pc;}
+        n=Math.floor($(window).width/w); m=($(window).width-(n*w))/(n*2);
+        max=0;
 
-      if(me.Bs.mode=='mobile'){w=$(this).attr('mobile')||me.Bs.cellMobile;}
-      else{w=$(this).attr('pc')||me.Bs.cellPc;}
-      n=Math.floor($(window).width/w); m=($(window).width-(n*w))/(n*2);
-      max=0;
-
-      $(this).children().each(function(){
-        $(this).css({'margin-left': m+'px', 'margin-right': m+'px', width: w+'px'});
-        $(this).css({float: 'left'});
-        h=$(this).height(); if(h>max){max=h;}
-      });
-      $(this).children().each(function(){$(this).css({height: max+'px'});});
+        $(this).children().each(function(){
+          $(this).css({'margin-left': m+'px', 'margin-right': m+'px', width: w+'px'});
+          $(this).css({float: 'left'});
+          h=$(this).height(); if(h>max){max=h;}
+        });
+        $(this).children().each(function(){$(this).css({height: max+'px'});});
+      }
     });
   },
 //
@@ -547,6 +773,8 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
         });}
 
         me.Save.carousel=me.Save.carousel||[]; me.Save.carousel[ix]=pm;
+                                            //
+        me.Save.carousel[ix]=setSize(me.Save.carousel[ix], $(this));
 
       });
 
@@ -628,7 +856,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
         if(direct){
           $('#'+me.Save.tabs[ix][0].id).css({marginLeft: l+'px'});
         }else{
-          $('#'+me.Save.tabs[ix][0].id).animate({marginLeft: l+'px'}, me.Bs.animate);
+          $('#'+me.Save.tabs[ix][0].id).animate({marginLeft: l+'px'}, me.Bs.tab.animate);
         }
       }else{
         j=0; obj.find('.Tabpage').each(function(){
@@ -765,13 +993,12 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 // accordion:アコーディオン
 //ok
   accordion: function(mode){
-    var me=this; var op=me.Bs.accordion;
-    op=op||{};
+    var me=this;
 ////
 //  initialize 初期化
     var initialize=function(dl, op){
-      var s=dl.attr('img')||op.img;
-      if(me.Bs.mode=='mobile'){s=dl.attr('mobile')||op.mobile||s;}
+      var s=dl.attr('img')||me.Bs.accordion.image;
+      if(me.Bs.mode=='mobile'){s=dl.attr('mobile')||me.Bs.accordion.mobile||s;}
       dl.attr('save', s);
 
       if(dl.attr('state')!='open'){s=me.insert(s, '_r'); dl.find('dd').css('display', 'none');}
@@ -782,7 +1009,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     var changeImage=function(dl){
 
       dl.find('dt').each(function(){
-        s=dl.attr('save'); if(me.Bs.mode=='mobile'){s=dl.attr('mobile')||op.mobile||s;}
+        s=dl.attr('save'); if(me.Bs.mode=='mobile'){s=dl.attr('mobile')||me.Bs.accordion.mobile||s;}
         if(dl.attr('state')!="open"){s=me.insert(s, '_r');}
         $(this).find('img').attr('src', s);
       });
@@ -807,7 +1034,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 ////
     $('.Accordion').each(function(){
       var dl=$(this);
-      var vi=dl.attr('animate')||op.animate||me.Bs.animate;
+      var vi=dl.attr('animate')||me.Bs.accordion.animate;
 
       if(mode=='init'){
         initialize(dl, vi); monitoring(dl, vi);
@@ -815,6 +1042,77 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
         changeImage(dl);
       }
     });
+  },
+//
+// folding メニュー折りたたみ
+//
+  folding: function(mode){
+    var me=this;
+    var h, f, g, op, cl, no, o;
+
+    f=true; $('.Folding').eq(0).each(function(){f=false;}); if(f){return;}
+
+    if(mode=='init'){
+    
+      $('.Folding dl dt').on('click', function(){
+        f=false;
+        o=$(this).parents().eq(1);
+        switch(o.attr('mode')){
+         case 'mobile': if(me.Bs.mode=='mobile'){f=true;} break;
+         case 'pc': if(me.Bs.mode=='pc'){f=true;} break;
+         default: f=true;
+        }
+
+        op=$(this).attr('open')||me.Bs.image.open;
+        cl=$(this).attr('close')||me.Bs.image.close;
+        no=$(this).attr('none')||me.Bs.image.none;
+
+        if(f){
+          $(this).parent('dl').siblings().each(function(){
+            $(this).find('dt').css({'background-image': 'url('+cl+')'});
+            $(this).find('dd').css({display: 'none'});
+          });
+          $(this).parent('dl').eq(0).find('dt').css({'background-image': 'url('+op+')'});
+          $(this).parent('dl').eq(0).find('dd').css({display: 'block'});
+        }
+      });
+
+    }
+
+    $('.Folding').each(function(){
+
+      f=false;
+      switch($(this).attr('mode')){
+       case 'mobile': if(me.Bs.mode=='mobile'){f=true;} break;
+       case 'pc': if(me.Bs.mode=='pc'){f=true;} break;
+       default: f=true;
+      }
+
+      op=$(this).attr('open')||me.Bs.image.open;
+      cl=$(this).attr('close')||me.Bs.image.close;
+      no=$(this).attr('none')||me.Bs.image.none;
+
+      if(f){
+        $(this).find('dl').each(function(){
+          g=true; $(this).find('a').each(function(){
+            if($(this).attr('class')=='now'){g=false;}
+          });
+          if(g){
+            $(this).find('dt').css({'background-image': 'url('+cl+')'});
+            $(this).find('dd').css({display: 'none'});
+          }else{
+            $(this).find('dt').css({'background-image': 'url('+op+')'});
+            $(this).find('dd').css({display: 'block'});
+          }
+        });
+      }else{
+        $('.Folding').find('dl').each(function(){
+          $(this).find('dt').css({'background-image': 'url('+no+')'});
+          $(this).find('dd').css({display: 'block'});}
+        );
+      }
+    });
+
   },
 //
 // map: 地図
@@ -1025,7 +1323,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
   },
 //
-// セクションガイド(#Posvar)
+// セクションガイド(#Posbar)
 //ok
   section: function(mode, pos, direct){
     var me=this; var id, p, t, i, out;
@@ -1035,7 +1333,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
      case 'init':
                                     // 初期化
       me.Save.section=false;
-      $('#Posvar').each(function(){
+      $('#Posbar').each(function(){
         out='<ul>';
         var now='now';
         $('section').each(function(){
@@ -1051,12 +1349,35 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
           }
         });
         out+='</ul>';
-        $('#Posvar').html(out);
+        $('#Posbar').html(out);
         me.Save.section=true;
       });
 
-      $("#Posvar a").click(function(){
-        var x=$(this).attr('href'); me.section('goto', x);
+      if(me.Bs.mode!='mobile'){http://localhost/image/cloud22.jpg
+        var obj=$('#Posbar').find('li').eq(1);
+        if(obj.length){
+          $('#SectionNext').attr('href', obj.find('a').attr('href'));
+          $('#SectionNext').attr('alt', obj.find('a').html());
+          $('#SectionNext').css({opacity: 1.0});
+        }else{
+          $('#SectionNext').attr('href', '');
+          $('#SectionNext').attr('alt', '');
+          $('#SectionNext').css({opacity: 0.5});
+        }
+
+        $('#SectionPrev').attr('href', '');
+        $('#SectionPrev').attr('alt', '');
+        $('#SectionPrev').css({opacity: 0.5});
+      }
+      $('#Posbar').find('li').eq(0).attr('class', 'now');
+
+      $("#Posbar a").click(function(){
+        var x=$(this).attr('href'); if(x){me.section('goto', x);}
+        return false;
+      });
+
+      $("#SectionNext, #SectionPrev").click(function(){
+        var x=$(this).attr('href'); if(x){me.section('goto', x);}
         return false;
       });
 
@@ -1075,14 +1396,20 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
      case 'goto':
                                       // セクションのポジショニング
       if(!me.Save.section){return;}
-      var tag, ix, f;
-      if(navigator.userAgent.toLowerCase().indexOf('applewebkit')>0){tag='body';}else{tag='html';}
-      if(pos.charAt(0)=='#'){
-        me.Now=pos;
-        var y;
-        if(pos=='#Top'){y=0;}else{y=$(pos).position().top+$('main').position().top-me.Save.fixedTop;}
-        if(direct){$(tag).scrollTop(y);}
-        else{$('body').animate({"scrollTop": y}, me.Bs.animateScroll, "swing");}
+
+      if(me.Bs.mode=='mobile' && me.Bs.section.mobile=='horizontal'){
+        me.Fdata.section.move=me.Sec[pos].index+1;
+        me.flick(me.Fdata.section, function(data){me.section('indicator.mb', data);});
+      }else{
+        var tag, ix, f;
+        if(navigator.userAgent.toLowerCase().indexOf('applewebkit')>0){tag='body';}else{tag='html';}
+        if(pos.charAt(0)=='#'){
+          me.Now=pos;
+          var y;
+          if(pos=='#Top'){y=0;}else{y=$(pos).position().top+$('main').position().top-me.Save.fixedTop;}
+          if(direct){$(tag).scrollTop(y);}
+          else{$('body').animate({"scrollTop": y}, me.Bs.scroll.animate, "swing");}
+        }
       }
       return false;
 
@@ -1093,22 +1420,45 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       d=Math.floor($(window).height()/2);
       s='#Top'; j=0; f=true; i=0;
       for(k in me.Sec){
-        $('#Posvar').find('li').eq(i).attr('class', '');
+        $('#Posbar').find('li').eq(i).attr('class', '');
         y=$(k).position().top+$('main').position().top-me.Save.fixedTop;
         if(pos<y){f=false;} if(f){s=k; j=i;}
         i++;
       }
-      $('#Posvar').find('li').eq(j).attr('class', 'now');
-      me.Now=s;
-      return;
-
-     case 'padding' :
+      $('#Posbar').find('li').eq(j).attr('class', 'now');
       
-      if(!me.Save.section){return;}
-      $('section').each(function(){
-        $(this).css({"padding-bottom": Math.floor($(window).height()/2)+"px"});
-      });
+      me.Now=s;
 
+      var nx=j+1; var pr=j-1; var obj;
+        obj=$('#Posbar').find('li').eq(nx);
+      if(obj.length){
+        $('#SectionNext').attr('href', obj.find('a').attr('href'));
+        $('#SectionNext').attr('alt', obj.find('a').html());
+        $('#SectionNext').css({opacity: 1.0});
+      }else{
+        $('#SectionNext').attr('href', '');
+        $('#SectionNext').attr('alt', '');
+        $('#SectionNext').css({opacity: 0.5});
+      }
+
+      if(pr<0){
+        $('#SectionPrev').attr('href', '');
+        $('#SectionPrev').attr('alt', '');
+        $('#SectionPrev').css({opacity: 0.5});
+      }else{
+        obj=$('#Posbar').find('li').eq(pr);
+        $('#SectionPrev').attr('href', obj.find('a').attr('href'));
+        $('#SectionPrev').attr('alt', obj.find('a').html());
+        $('#SectionPrev').css({opacity: 1.0});
+      }
+      return;
+    
+     case 'indicator.mb':
+      if(me.Bs.mode=='mobile'){
+        var i=1; $('#Posbar').find('li').each(function(){
+          if(i==pos.ix){$(this).attr('class', 'now');}else{$(this).attr('class', '');}
+        i++;});
+      }
       return;
 
     }
@@ -1121,7 +1471,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     
     $('.Load').each(function(){
       m=$(this).attr('href'); e=$(this);
-      $.ajax({async: true, url: m, success: function(data){e.html(data);}});
+      $.ajax({async: false, url: m, success: function(data){e.html(data);}});
     });
 
   },
@@ -1154,7 +1504,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       });
     });
 //
-    $(".PhotoU").on('click', function(){
+    $(".PhotoU, .photoU").on('click', function(){
       f=$(this).attr('href');
       if(!f){f=me.insert($(this).attr('src'), '_r');}
       $('#PhotoU').attr('src', f);
@@ -1197,6 +1547,96 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     });
   },
 //
+//sns SNS編集
+//
+  sns: function(mode){
+    var me=this;
+    
+    var wi=me.Bs.sns.width; var hi=me.Bs.sns.height; var op=me.Bs.sns.option;
+    var f=true, t=true;
+    $('.Sns').each(function(){
+      if($(this).attr('alt')=='twitter'){if(t){me.twitter(); t=false;}}
+      if($(this).attr('alt')=='facebook'){if(f){me.facebook(); f=false;}}
+    });
+
+    $('.Sns').on('click', function(){
+      switch($(this).attr('alt')){
+       case 'twitter':
+        window.open(
+          'https://twitter.com/intent/tweet?url='+location.href+'&text='+document.title
+            +'&tw_p=tweetbutton',
+          'tweet',
+          'width='+wi+',height='+hi+','+op
+        );
+        break;
+       case 'facebook':
+        window.open(
+          'https://www.facebook.com/sharer/sharer.php?u='+location.href,
+          'facebookいいね',
+          'width='+wi+',height='+hi+','+op
+        );
+        break;
+       case 'gplus':
+        window.open(
+          'https://plusone.google.com/_/+1/confirm?hl=ja&url='+location.href+'&title='
+            +document.title,
+          'google plus',
+          'width='+wi+',height='+hi+','+op
+        );
+        break;
+      }
+      return false;
+    });
+
+  },
+//
+// analytics
+//
+  analytics: function(){
+    var me=this; var a;
+    if(me.Bs.analytics.account){
+      _gaq.push(['_setAccount', me.Bs.analytics.account], ['_setDomainName', me.Bs.domain]);
+      a=[]; if(me.Bs.analytics.value){
+        a[0]='_setCustomVar'; a[1]=me.Bs.analytics.index;
+        a[2]=me.Bs.analytics.name; a[3]=me.Bs.analytics.value; a[4]=me.Bs.analytics.scope;
+        _gaq.push(a);
+      }
+      a=[]; if(me.Bs.analytics.vertial){
+        a[0]='_trackPageview'; a[1]=me.Bs.analytics.vertial;
+        _gaq.push(a);
+      }
+
+      var ga=document.createElement('script'); ga.type='text/javascript'; ga.async=true;
+      ga.src=('https:' == document.location.protocol ? 'https://ssl' : 'http://www')
+        +'.google-analytics.com/ga.js';
+      var s=document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    }
+  },
+//
+// twitter
+//
+  twitter: function(){
+    window.twttr=(function(d,s,id){
+      var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};
+      if(d.getElementById(id))return;
+      js=d.createElement(s); js.id=id; js.src="https://platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);
+      t._e=[];t.ready=function(f){t._e.push(f);};return t;
+    }(document,"script","twitter-wjs"));
+  },
+//
+// facebook
+//
+  facebook: function(){
+    window.facebk=(function(d, s, id){
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if(d.getElementById(id)){return;}
+      js=d.createElement(s); js.id=id;
+      js.src = "//connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v2.0";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  },
+//
 // フリック操作
 //
   flick: function(data, indicator, direct){
@@ -1205,8 +1645,8 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
                                                 // 構造データ
     data.mode=data.mode||'page';                // 操作モード(page, hide, move)
     data.area=data.area;                        // area: 移動オブジェクト
-    data.wi=data.wi||300;                       // wi: 移動体幅(px)
-    data.hi=data.hi||500;                       // hi: 窓高(px)
+    data.wi=data.wi||data.area.outerWidth();    // wi: 移動体幅(px)
+    data.hi=data.hi||data.area.outerHeight();   // hi: 窓高(px)
     data.ix=data.ix||1;                         // ix: 表示開始頁(1~)
     data.max=data.max||0;                       // max:最大個数
     data.threshold=data.threshold||100;         // threshold: 動くかどうかの閾値(px)
@@ -1260,7 +1700,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
           if(data.mode=='move'){
             var tx=data.inx+dx;
             if(ty>data.maxtop){ty=data.maxtop;} if(ty<data.minbot){ty=data.minbot;}
-            $(data.object).css({'margin-left': tx+'px'});
+            data.object.css({'margin-left': tx+'px'});
           }else{
             if(dx<0){data.object.css({'margin-left': dx+'px'});}
           }
@@ -1278,7 +1718,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
         data.flg=false;
 
         if(data.mode!='move'){
-          data.ix=$(data.area).attr('ix')-0;
+          data.ix=data.area.attr('ix')-0;
           var n=(isTouch ? event.changedTouches[0].pageX : e.pageX);
           var df=n-data.stx;
           if(df<0-data.threshold){
@@ -1292,7 +1732,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
           var d=data.wi*(data.ix-1)*-1;
           data.object.stop();
           data.object.animate({'margin-left': d}, data.animate); indicator(data);
-          $(data.area).attr('ix', data.ix);
+          data.area.attr('ix', data.ix);
         }
       }
     });
@@ -1452,6 +1892,15 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     }
 
     if(para){$(selector).css(para);}
+  },
+//
+  get: function(cmd, obj, op){
+    switch(cmd){
+     case 'fullHeight':
+      return parseInt(obj.css('margin-top'))+parseInt(obj.css('margin-bottom'))+obj.outerHeight();
+     case 'fullEidth':
+      return parseInt(obj.css('margin-left'))+parseInt(obj.css('margin-right'))+obj.outerWidth();
+    }
   },
 //
   cut: function(x){

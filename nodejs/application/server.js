@@ -1,2 +1,2 @@
 var CMS=require('kncms');
-CMS.server(function(){}, {port: 80});
+CMS.server(function(){});
