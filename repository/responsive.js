@@ -107,7 +107,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       me.Bs.footer.animate=me.Bs.footer.animate||me.Bs.animate;
       me.Bs.tipup=op.Tipup||{};
       me.Bs.tipup.xdiff=me.Bs.tipup.xdiff||30;
-      me.Bs.tipup.ydiff=me.Bs.tipup.ydiff||30;
+      me.Bs.tipup.ydiff=me.Bs.tipup.ydiff||60;
       me.Bs.scroll=op.Scroll||{};
       me.Bs.scroll.animate=me.Bs.scroll.animate||me.Bs.animate;
       me.Bs.analytics=op.Analytics||{};
@@ -1531,8 +1531,8 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       y=e.clientY-me.Bs.tipup.ydiff; x=e.clientX+me.Bs.tipup.xdiff;
       t=$(this).attr("alt"); $("#Tipup").html(t);
       w=$('#Tipup').outerWidth();
-      z=Math.floor(e.pageX+me.Bs.tipup.xdiff-w/2);
-      if(z>$(window).width()){x=$(window).width()-w;} 
+      z=e.pageX+me.Bs.tipup.xdiff+w;
+      if(z>$(window).width()){x=$(window).width()-w-20;}
       $("#Tipup").css({top: y+"px", left: x+'px'});
       if(t){$("#Tipup").show();}
     });
@@ -1541,8 +1541,8 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       y=e.clientY-me.Bs.tipup.ydiff; x=e.clientX+me.Bs.tipup.xdiff;
       t=$(this).attr("alt"); $("#Tipup").html(t);
       w=$('#Tipup').outerWidth();
-      z=Math.floor(e.pageX+me.Bs.tipup.xdiff-w/2);
-      if(z>$(window).width()){x=$(window).width()-w;} 
+      z=e.pageX+me.Bs.tipup.xdiff+w;
+      if(z>$(window).width()){x=$(window).width()-w-20;} 
       $("#Tipup").css({top: y+"px", left: x+'px'});
     });
   },
