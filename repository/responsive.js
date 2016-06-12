@@ -11,7 +11,8 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     $(window).on('load', function(){
 
       me.config(op, 'init'); me.section('init'); me.spanning(); me.ajaxSource();
-      me.carousel('init'); me.tabs('init'); me.accordion('init'); me.sns(); me.analytics();
+      me.carousel('init'); me.tabs('init'); me.accordion('init'); me.map('init');
+      me.sns(); me.analytics();
       me.depend(); me.image('init'); me.hide();
       me.cell(); me.section('padding'); me.folding('init');
       me.zone(); me.body('init');
@@ -33,11 +34,11 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       $(window).on('scroll', function(){
         var pos=me.scroll(); me.footer('cont', pos); me.section('indicator', pos);
         me.locateSide('cont', pos);
-        me.modal('reset');
+        me.modal('reset'); me.map('scroll');
       });
 
       me.photoUp(); me.tipup();
-      me.map('init'); me.rollover(); me.modal('init'); me.locateSide('init');
+      me.rollover(); me.modal('init'); me.locateSide('init');
 
       me.Save.mode=me.Bs.mode;
 
@@ -101,6 +102,11 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       me.Bs.accordion.mobile=me.Bs.accordion.mobile||me.Bs.accordion.image;
       me.Bs.accordion.animate=me.Bs.accordion.animate||me.Bs.animate;
       me.Bs.map=op.Map||{};
+      me.Bs.map.close=me.Bs.map.close||me.pngclose;
+      me.Bs.map.scale=me.Bs.map.scale||10;
+      me.Bs.map.animate=me.Bs.map.animate||me.Bs.animate;
+      me.Bs.map.height=me.Bs.map.height||500;
+      me.Bs.map.width=me.Bs.map.width||500;
       me.Bs.footer=op.Footer||{};
       me.Bs.footer.remain=me.Bs.footer.remain||0;
       me.Bs.footer.rate=me.Bs.footer.rate||80;
@@ -614,7 +620,8 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 //ok
   carousel: function(mode, ix){
     var me=this; var pm, op; ix=ix||0;
-//    
+////
+//  setsize
     var setSize=function(pm, obj){
       var wi, hi, wn, hn, w, n, a, max;
 
@@ -622,7 +629,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
       a=obj.parent().width();
       if(pm.priority=='width'){n=Math.floor(a/w); w=Math.floor(a/n); pm.num=n;}
-      else{n=pm.num; w=Math.floor(a/n);}
+      else{if(me.Bs.mode=='mobile'){n=pm.nummb;}else{n=pm.num;} w=Math.floor(a/n);}
 
       pm.max=0;
       obj.find('li').each(function(){$(this).find('img').css({width: w+'px'}); pm.max++;});
@@ -641,7 +648,8 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       }
       return pm;
     };
-//
+////
+//  indicator
     var indicator=function(op, mode){
       var l=op.max, p=op.ix, mk='', i, j;
       if(mode=='init'){
@@ -667,13 +675,14 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
         i++;});
       }
     };
-//
+////
+////
     switch(mode){
      case 'image':
                                             //
-      $('.Carousel').each(function(){
-        me.Save.carousel[ix]=setSize(me.Save.carousel[ix], $(this)); ix++;
-      });
+      ix=0; $('.Carousel').each(function(){
+        me.Save.carousel[ix]=setSize(me.Save.carousel[ix], $(this));
+      ix++;});
       return;
 
      case 'loop':
@@ -1121,163 +1130,207 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     var me=this; var ix, obj;
     if(!me.Bs.map.key){return;}
 ////
+//  blockMap 埋め込み地図  
+    var blockMap=function(obj, ix){
+      var a, ti, s, w, h, e, o;
+      w=obj.attr('wi')||me.Bs.map.width; h=obj.attr('hi')||me.Bs.map.height;
+      if(me.Bs.mode=='mobile'){
+        h=obj.attr('mobile')||h;
+        obj.css({width: '100%', height:h+'px', display: 'block'});
+      }else{
+        w=Math.floor(w*me.Bs.scale); h=Math.floor(h*me.Bs.scale);
+        obj.css({width: w+'px', height: h+'px', display: 'block'});
+      }
+      var o={};
+      me.Save.map[ix]={};
+      o.zoom=obj.attr('scale')-0||me.Bs.map.scale;
+      o.mapTypeId=google.maps.MapTypeId.ROADMAP;
+      me.Save.map[ix].obj=new google.maps.Map(obj[0], o);
+      var lat=obj.attr('lat')-0||35; var lon=obj.attr('lon')-0||135;
+      var ps=new google.maps.LatLng(lat, lon);
+      me.Save.map[ix].obj.setCenter(ps);
+      ti=obj.attr('title')||'';
+      var mk=new google.maps.Marker({position: ps, map: me.Save.map[ix].obj, title: ti});
+ 
+      google.maps.event.addDomListener(window, "resize", function() {
+        var ce=me.Save.map[ix].obj.getCenter();
+        google.maps.event.trigger(me.Save.map[ix].obj, "resize");
+        me.Save.map[ix].obj.setCenter(ce);
+      });
+      
+    };
+////
+//
+    var onload=function(){
+      me.Save.map=[];
+      var ix=0; $('.Map').each(function(){
+        obj=$(this); $(this).attr('ix', ix);
+        if(obj[0].localName=='img'){monitoring(obj, ix);}else{blockMap(obj, ix);}
+      ix++; });
+    };
+////
 //  molding タグ成形
     var molding=function(){
       if(!document.getElementById('Pbody')){
-        var apikey=me.Bs.map.key||'AIzaSyBqorhjZ69rxicwm8LWZ09cAWNLAbsuR-I';
-        $('body').append('<div id="Pbody"></div>');
-        $('body').append('<img src="'+op.close+'" alt="close" id="Pclose"/>');
-        $('body').append('<script type="text/javascript" src="http://maps.google.com/maps/api/js?'+
-        'key='+apikey+'&language=ja&region=JP"></script>');
+        var apikey=me.Bs.map.key;
+        $('body').append('<div id="Pbody" ix=0> </div>');
+        $('body').append('<img src="'+me.Bs.map.close+'" alt="close" id="Pclose"/>');
+        var el=document.createElement('script');
+        var flg=true;
+        el.type='text/javascript';
+        el.src='https://maps.googleapis.com/maps/api/js?key='+me.Bs.map.key+'&language=ja&region=JP"';
+        el.onload=function(){if(flg){flg=false; onload();}};
+        el.onreadystatechange=function(){
+          if(this.readyState=="loaded"||this.readyState=='complete'){if(flg){flg=false; onload();}}
+        };
+        document.body.appendChild(el);
       }else{
-        $('#Pbody').html('<div id="Pbody"></div>');
+        $('#Pbody').html('');
       }
-      $("#Pbody").css({"display":"none", "position":"absolute", "z-index": 500});
-      $("#Pbody").css({"padding":"0 0 12px 0"});
-      $("#Pclose").css({"border":"none","display":"none","position":"absolute"});
-    };
-////
-//  altSize サイズ変更
-    var altSize=function(obj, ix){
-      if(me.Bs.mode!='mobile'){
-        var w=Math.floor(me.Save.map[ix].width*me.Bs.scale);
-        var h=Math.floor(me.Save.map[ix].height*me.Bs.scale);
-        obj.css({width: w+'px', height: h+'px', display: 'block'});
-      }
-    };
-////
-//  blockMap 埋め込み地図  
-    var blockMap=function(obj, ix){
-      var a, t, lat, lon, s, w, h, e, o;
-      a=JSON.parse($(this).html()); t=a.title||'';
-      lat=a.lat||135; lon=a.lon||45; s=a.scale||me.Bs.map.scale||13;
-      w=a.width||me.Bs.map.width||400; h=a.height||me.Bs.map.height||400;
-      if(me.Bs.mode=='mobile'){
-          w=0; e=$(this);
-          while(w==0){
-            e=e.parent();
-            if(e[0].tagName=='DIV' || e[0].tagName=='SECTION' ||
-              e[0].tagName=='HEADER' || e[0].tagName=='FOOTER' || e[0].tagName=='NAV'){w=e.width();}
-            if(w!=0){wi=w; hi=w;}
-            if(e[0].tagName=='BODY'){w=-1;}
-          }
-      }else{
-        w=Math.floor(w*me.Bs.scale); h=Math.floor(h*me.Bs.scale);
-      }
-      obj.css({width: w+'px', height: h+'px', display: 'block'});
-      o={}; o.zoom=s; o.mapTypeId=google.maps.MapTypeId.ROADMAP;
-      var map=new google.maps.Map(this, o);
-      map.setCenter(new google.maps.LatLng(lat, lon));
-      var p=new google.maps.LatLng(lat, lon);
-      new google.maps.Marker({position: p, map: map, title: t}); 
-    };
-////
-//  popup 地図のポップアップ
-    var popup=function(obj, ix){
-      var lat=obj.attr("lat")-0||135; var lon=obj.attr("lon")-0||45; var ti=obj.attr("title")||'';
-      var ra=obj.attr("rate")||me.Bs.map.rate||80;
-      var tp=$(window).scrollTop()+$(window).height()*(100-ra)/200;
-      var wi=Math.floor($(window).width()*ra/100);
-      var hi=Math.floor($(window).height()*ra/100);
-      var lf=($(window).width()-wi)/2; var cl=lf+wi-$('#Pclose').width();
-      $('#Pbody').attr('ix', ix);
       $("#Pbody").css({
-        display: 'block', width: wi+'px', height: hi+'px', top: tp+'px', left: lf+'px'
+        "display": "none", "position": "absolute", "padding": "0 0 12px 0", 'z-index': 900
       });
-      $("#Pclose").css({position: 'abosolute', right: 0, top: 0, display: 'block', 'z-index': 50});
-      var o={}; o.zoom=obj.attr('scale')||me.Bs.map.scale; o.mapTypeId=google.maps.MapTypeId.ROADMAP;
-      var x=document.getElementById('Pbody'); map=new google.maps.Map(x, o);
-      map.setCenter(new google.maps.LatLng(lat, lon));
-      var ps=new google.maps.LatLng(lat, lon);
-      new google.maps.Marker({position: ps, map: map, title: ti});
-    };
-////
-//  elevate 地図のせり上がり
-    var elevate=function(obj, ix){
-      var lat=obj.attr("lat")-0||135; var lon=obj.attr("lon")-0||45; var ti=obj.attr("title")||'';
-      var ra=obj.attr("rate")||me.Bs.map.rate||80;
-      var tp=Math.floor($(window).height()*(100-ra)/100);
-      var wi=$(window).width();
-      var hi=$(window).height()-tp;
-      $('#Pbody').attr('ix', ix);
-      $("#Pbody").css({
-        position: 'absolute', display: 'block', width: wi+'px', height: hi+'px', top: 0, left: 0
+      $("#Pclose").css({
+        "border": "none","display": "none","position": "absolute", 'z-index': 901
       });
-      $("#Pclose").css({position: 'absolute', right: 0, top: 0, display: 'block', 'z-index': 50});
-      var o={}; o.zoom=obj.attr('scale')||me.Bs.map.scale; o.mapTypeId=google.maps.MapTypeId.ROADMAP;
-      var x=document.getElementById('Pbody'); map=new google.maps.Map(x, o);
-      map.setCenter(new google.maps.LatLng(lat, lon));
-      var ps=new google.maps.LatLng(lat, lon);
-      new google.maps.Marker({position: ps, map: map, title: ti});
     };
 ////
 //  monitoring 監視
     var monitoring=function(obj, ix){
       me.Save.map[ix]={};
-      
       obj.on('click', function(){
-        if(me.Bs.mode=='mobile'){
-          if(!me.Save.map[ix].toggle){
-            var t=$(window).height()-$(window).width();
-            $('#Pmap').css({display: 'block'});
-            $('#Pmap').animate({top: t+'px'}, me.Bs.animate);
-            me.Save.map[ix].toggle=true;
-          }else{
-            var t=$(window).height();
-            $('#Pmap').animate({top: t+'px'}, me.Bs.animate, function(){
-              $('#Pmap').css({display: 'none'});
-            });
-            me.Save.map[ix].toggle=false;
-          }
-        }else{
-          if(!me.Save.map[ix].toggle){
-            popup(obj, ix); toggle=obj.attr('lat'); return false;
-          }else{
-            if(toggle!=obj.attr('lat')){
-              popup(obj, ix); me.Save.map[ix].lat=obj.attr('lat');
-            }else{
-              $("#Pclose").css("display","none"); $("#Pbody").fadeOut("fast");
-              me.Save.pmap[ix].toggle=false;
-            }
-            return false;
-          }
-        }
+        var ix=$(this).attr('ix'); $('#Pbody').attr('ix', ix);
+        if(!me.Save.map[ix]){me.Save.map[ix]={};}
+        if(me.Save.map[ix].toggle){dimout(ix);}
+        else{if(me.Bs.mode=='mobile'){elevate($(this), ix);}else{popup($(this), ix);}}
+        return false;
       });
 
-    $("#Pclose").on('click', function(){
+      $("#Pclose").on('click', function(){dimout(ix);});
+    };
+////
+//  popup 地図のポップアップ
+    var popup=function(obj, ix){
+      var lat=obj.attr("lat")-0||35; var lon=obj.attr("lon")-0||135; var ti=obj.attr("title")||'';
+      var ra=obj.attr("rate")||me.Bs.map.rate||80;
+      var tp=$(window).scrollTop()+$(window).height()*(100-ra)/200;
+      var wi=Math.floor($(window).width()*ra/100);
+      var hi=Math.floor($(window).height()*ra/100);
+      var lf=($(window).width()-wi)/2; var cl=lf+wi-$('#Pclose').width();
+      $('#Pbody').attr('ix', ix); $('#Pbody').attr('rate', ra);
+      $("#Pbody").css({
+        display: 'block', width: wi+'px', height: hi+'px', top: tp+'px', left: lf+'px',
+        'z-index': 900
+      });
+      lf=lf+wi-$('#Pclose').width();
+      $("#Pclose").css({
+        position: 'abosolute', left: lf+'px', top: tp+'px',
+        display: 'block', 'z-index': 901
+      });
+      var o={};
+      o.zoom=obj.attr('scale')||me.Bs.map.scale;
+      o.mapTypeId=google.maps.MapTypeId.ROADMAP;
+
+      var x=document.getElementById('Pbody');
+      me.Save.map[ix].obj=new google.maps.Map(x, o);
+      me.Save.map[ix].obj.setCenter(new google.maps.LatLng(lat, lon));
+      var ps=new google.maps.LatLng(lat, lon);
+      new google.maps.Marker({position: ps, map: me.Save.map[ix].obj, title: ti});
+      me.Save.map[ix].toggle=true;
+      $('#Pbody').animate({opacity: 1.0}, me.Bs.map.animate);
+    };
+////
+//  elevate 地図のせり上がり
+    var elevate=function(obj, ix){
+      var lat=obj.attr("lat")-0||35; var lon=obj.attr("lon")-0||135; var ti=obj.attr("title")||'';
+      var ra=obj.attr("rate")||me.Bs.map.rate||50;
+      var tp=Math.floor($(window).scrollTop()+$(window).height()*(100-ra)/100);
+      var wi=$(window).width();
+      var hi=Math.floor($(window).height()*(100-ra)/100);
+      var lf=$(window).width()-$('#Pclose').outerWidth();
+      $('#Pbody').attr('ix', ix); $('#Pbody').attr('rate', ra);
+      $("#Pbody").css({
+        position: 'fixed', top: $(window).height()+'px', left: 0,
+        display: 'block', width: wi+'px', height: hi+'px', 'z-index': 900
+      });
+      $("#Pclose").css({
+        position: 'absolute', left: lf+'px', top: $(window).height()+'px',
+        display: 'block', 'z-index': 901
+      });
+      var o={}; o.zoom=obj.attr('scale')||me.Bs.map.scale; o.mapTypeId=google.maps.MapTypeId.ROADMAP;
+      var x=document.getElementById('Pbody'); map=new google.maps.Map(x, o);
+      map.setCenter(new google.maps.LatLng(lat, lon));
+      var ps=new google.maps.LatLng(lat, lon);
+      new google.maps.Marker({position: ps, map: map, title: ti});
+      $('#Pbody').animate({top: tp+'px'}, me.Bs.map.animate);
+      $('#Pclose').animate({top: tp+'px'}, me.Bs.map.animate);
+      me.Save.map[ix].toggle=true;
+    };
+////
+//    dimout
+    var dimout=function(ix){
       if(me.Bs.mode=='mobile'){
-        var t=$(window).height();
-        $('#Pmap').animate({top: t+'px'}, me.Bs.animate);
-        me.Save.map[ix].toggle=false;
+        var t=$(window).height()+$(window).scrollTop();
+        $('#Pbody').animate({top: t+'px'}, me.Bs.map.animate, function(){
+          $("#Pbody").css("display","none");
+        });
+        $('#Pclose').animate({top: t+'px'}, me.Bs.map.animate, function(){
+          $("#Pclose").css("display","none");
+        });
       }else{
         $("#Pclose").css("display","none"); $("#Pbody").fadeOut("fast");
-        var ix=$("#Pbody").attr('data-ix'); me.Save.pmap[ix]='';
       }
-    });
-
+      me.Save.map[ix].toggle=false;
+    };
+////
+//  cancel
+    var cancel=function(obj){
+      if(me.Bs.mode!='mobile'){
+        $("#Pclose").css("display","none");
+        $("#Pbody").animate({opacity: 0, height: 0}, me.Bs.map.animate);
+        var ix=$("#Pbody").attr('ix');
+        me.Save.map[ix]={};
+      }
+    };
+////
+//  resize
+    var resize=function(){
+      $('.Map').each(function(){
+        var a, ti, s, w, h, e, o, obj;
+        obj=$(this);
+        if(obj[0].localName!='img'){
+          w=obj.attr('wi')||me.Bs.map.width; h=obj.attr('hi')||me.Bs.map.height;
+          if(me.Bs.mode!='mobile'){
+            w=Math.floor(w*me.Bs.scale); h=Math.floor(h*me.Bs.scale);
+            obj.css({width: w+'px', height: h+'px'});
+          }else{
+            h=obj.attr('mobile')||obj.attr('hi')||me.Bs.map.height;
+            obj.css({width: '100%'});
+          }
+        }else{cancel(obj);}
+      });
+    };
+////
+//  scroll
+    var scroll=function(){
+      var tp, ra;
+      if(me.Bs.mode=='mobile'){
+        ra=$('#Pbody').attr("rate");
+        tp=Math.floor($(window).scrollTop()+$(window).height()*(100-ra)/100);
+        $("#Pbody").css({top: tp+'px'}); $("#Pclose").css({top: tp+'px'});
+      }else{
+        ra=$('#Pbody').attr("rate");
+        tp=Math.floor($(window).scrollTop()+$(window).height()*(100-ra)/200);
+        $("#Pbody").css({top: tp+'px'}); $("#Pclose").css({top: tp+'px'});
+      }
     };
 ////
 ////
-    ix=0; $('.Map').each(function(){
-      obj=this;
-      if(obj.tagname=='img'){
-        switch(mode){
-         case 'init':
-          molding();
-          if(me.Bs.mode=='mobile'){elevate(obj, ix);}else{popup(obj, ix);}
-          monitoring(obj, ix);
-          break;
-         case 'cont':
-          altSize(obj, ix);
-          break;
-        }
-      }else{
-        switch(mode){
-         case 'init': molding(); blockMap(obj, ix); break;
-         case 'cont': altSize(obj, ix); break;
-        }
-      }
-    ix++; });
+    switch(mode){
+     case 'init': molding(); break;
+     case 'cont': resize(); break;
+     case 'scroll': scroll(); break;
+    }
   },
 //
 //
@@ -1523,7 +1576,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
     var elm=document.getElementById('Tipup');
     if(!elm){
-      $("body").append('<div id="Tipup"></div>');
+      $("body").append('<div id="Tipup"> </div>');
       $("#Tipup").css({opacity:0.9, position:"fixed", display:"none", 'z-index': 1000});
     }
 
