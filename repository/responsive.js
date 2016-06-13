@@ -15,7 +15,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       me.sns(); me.analytics();
       me.depend(); me.image('init'); me.hide();
       me.cell(); me.section('padding'); me.folding('init');
-      me.zone(); me.body('init');
+      me.zone(); me.body('init'); me.logo('init');
       me.section('position');
       me.another('init');
       me.footer('init', 0);
@@ -25,7 +25,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
         me.carousel('image'); me.tabs('cont'); me.accordion('cont');
         me.depend(); me.image(); me.hide(); me.cell(); me.section('padding'); me.folding();
         me.zone(); me.body(); me.scroll();
-        me.map('cont');
+        me.map('cont'); me.logo('cont', $(window).scrollTop());
         me.another('cont');
         me.footer('resize', $(window).scrollTop());
         me.Save.mode=me.Bs.mode;
@@ -34,7 +34,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       $(window).on('scroll', function(){
         var pos=me.scroll(); me.footer('cont', pos); me.section('indicator', pos);
         me.locateSide('cont', pos);
-        me.modal('reset'); me.map('scroll');
+        me.modal('reset'); me.map('scroll'); me.logo('cont', pos);
       });
 
       me.photoUp(); me.tipup();
@@ -122,6 +122,12 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       me.Bs.analytics.name=me.Bs.analytics.name||'key';
       me.Bs.analytics.value=me.Bs.analytics.value||'';
       me.Bs.analytics.scope=me.Bs.analytics.scope||3;
+      me.Bs.logo=op.Logo||{};
+      me.Bs.logo.right=me.Bs.logo.right||20;
+      me.Bs.logo.top=me.Bs.logo.top||300;
+      me.Bs.logo.next=me.Bs.logo.next||430;
+      me.Bs.logo.max=me.Bs.logo.max||120;
+      me.Bs.logo.min=me.Bs.logo.min||50;
     }
 
 
@@ -132,9 +138,11 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     else{me.Bs.wwi=$('body').outerWidth();}
     
     if(me.Bs.mode=='mobile'){
-      me.Bs.scale=me.Bs.wwi/me.Bs.widthMobile;
+//      me.Bs.scale=me.Bs.wwi/me.Bs.widthMobile;
+      me.Bs.scale=me.Bs.wwi/me.Bs.maxPc;
     }else{
-      me.Bs.scale=me.Bs.wwi/me.Bs.width;      // 現状スケール
+//      me.Bs.scale=me.Bs.wwi/me.Bs.width;      // 現状スケール
+      me.Bs.scale=me.Bs.wwi/me.Bs.maxPc;
     }
 
   },
@@ -280,6 +288,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     }else{
       wi=$('body').outerWidth();
     }
+    me.Bs.margin=lf;
 
     var h1=$('#Content').outerHeight(); var h2=$('#Side').outerHeight();
     if(h1<h2){h1=h2;}
@@ -562,7 +571,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     var me=this;
     
     if(me.Bs.locateSide=='yes'){
-      var d, k, l, p, h, s='top';
+      var d, k, l, p, h, s='#Top';
       if(mode=='init'){
         me.Save.sidepad=parseInt($('#Side').css('padding-top'))-0;
       }else{
@@ -1332,6 +1341,50 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
      case 'cont': resize(); break;
      case 'scroll': scroll(); break;
     }
+  },
+//
+// logo
+//
+  logo: function(mode, pos){
+    var me=this; var tp, lf, lf, wi;
+    if(!me.Bs.logo.image){return;}
+
+////
+//  molding
+    switch(mode){
+     case 'init':
+      
+      $('body').append('<img id="Logo" src="'+me.Bs.logo.image+'"/>');
+      tp=Math.floor(me.Bs.logo.top*me.Bs.scale);
+      lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right+me.Bs.logo.max)*me.Bs.scale)+me.Bs.margin;
+      wi=Math.floor(me.Bs.logo.max*me.Bs.scale);
+      $('#Logo').css({
+        position: 'absolute', top: tp+'px', left: lf+'px', width: wi+'px', 'z-index': 600
+      });
+      return;
+////
+//  scroll
+     case 'cont':
+      var p1=Math.floor(me.Bs.logo.top*me.Bs.scale);
+      var p2=p1+Math.floor(me.Bs.logo.max*me.Bs.scale);
+      var wl=Math.floor(me.Bs.logo.max*me.Bs.scale); var ws=me.Bs.logo.min;
+      if(pos>p2){
+        tp=Math.floor(me.Bs.logo.next*me.Bs.scale+pos-p2);
+        wi=me.Bs.logo.min;
+        lf=Math.floor(me.Bs.wwi-me.Bs.logo.right*me.Bs.scale-ws)+me.Bs.margin;
+      }else if(pos>p1){
+        tp=Math.floor(me.Bs.logo.top*me.Bs.scale
+          +(me.Bs.logo.next-me.Bs.logo.top)*me.Bs.scale*(pos-p1)/(p2-p1));
+        wi=Math.floor(wl-((wl-ws)*(pos-p1)/(p2-p1)));
+        lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right*me.Bs.scale+wi))+me.Bs.margin;
+      }else{
+        tp=Math.floor(me.Bs.logo.top*me.Bs.scale);
+        lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right+me.Bs.logo.max)*me.Bs.scale)+me.Bs.margin;
+        wi=Math.floor(me.Bs.logo.max*me.Bs.scale);
+      }
+      $('#Logo').css({top: tp+'px', left: lf+'px', width: wi+'px'});
+      return;
+    };
   },
 //
 //
