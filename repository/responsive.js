@@ -1354,7 +1354,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     switch(mode){
      case 'init':
       
-      $('body').append('<img id="Logo" src="'+me.Bs.logo.image+'"/>');
+      $('body').append('<a href="/index.html"><img id="Logo" src="'+me.Bs.logo.image+'"/></a>');
       tp=Math.floor(me.Bs.logo.top*me.Bs.scale);
       lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right+me.Bs.logo.max)*me.Bs.scale)+me.Bs.margin;
       wi=Math.floor(me.Bs.logo.max*me.Bs.scale);
