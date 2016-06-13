@@ -1354,35 +1354,53 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     switch(mode){
      case 'init':
       
-      $('body').append('<a href="/index.html"><img id="Logo" src="'+me.Bs.logo.image+'"/></a>');
-      tp=Math.floor(me.Bs.logo.top*me.Bs.scale);
-      lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right+me.Bs.logo.max)*me.Bs.scale)+me.Bs.margin;
-      wi=Math.floor(me.Bs.logo.max*me.Bs.scale);
-      $('#Logo').css({
-        position: 'absolute', top: tp+'px', left: lf+'px', width: wi+'px', 'z-index': 600
-      });
-      return;
-////
-//  scroll
-     case 'cont':
-      var p1=Math.floor(me.Bs.logo.top*me.Bs.scale);
-      var p2=p1+Math.floor(me.Bs.logo.max*me.Bs.scale);
-      var wl=Math.floor(me.Bs.logo.max*me.Bs.scale); var ws=me.Bs.logo.min;
-      if(pos>p2){
-        tp=Math.floor(me.Bs.logo.next*me.Bs.scale+pos-p2);
+      $('body').append('<a href="/index.html"><img id="Logo" src="'+me.Bs.logo.image+'" alt="ロゴマーク"/></a>');
+      if(me.Bs.mode=='mobile'){
         wi=me.Bs.logo.min;
-        lf=Math.floor(me.Bs.wwi-me.Bs.logo.right*me.Bs.scale-ws)+me.Bs.margin;
-      }else if(pos>p1){
-        tp=Math.floor(me.Bs.logo.top*me.Bs.scale
-          +(me.Bs.logo.next-me.Bs.logo.top)*me.Bs.scale*(pos-p1)/(p2-p1));
-        wi=Math.floor(wl-((wl-ws)*(pos-p1)/(p2-p1)));
-        lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right*me.Bs.scale+wi))+me.Bs.margin;
+        $('#Logo').css({
+          position: 'fixed', bottom: '10px', right: '10px', width: wi+'px', 'z-index': 1
+        });
       }else{
         tp=Math.floor(me.Bs.logo.top*me.Bs.scale);
         lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right+me.Bs.logo.max)*me.Bs.scale)+me.Bs.margin;
         wi=Math.floor(me.Bs.logo.max*me.Bs.scale);
+        $('#Logo').css({
+          position: 'absolute', top: tp+'px', left: lf+'px', width: wi+'px', 'z-index': 600
+        });
       }
-      $('#Logo').css({top: tp+'px', left: lf+'px', width: wi+'px'});
+      return;
+////
+//  scroll
+     case 'cont':
+      if(me.Bs.mode=='mobile'){
+        wi=me.Bs.logo.min;
+        $('#Logo').css({
+          position: 'fixed', bottom: '10px', right: '10px', width: wi+'px', 'z-index': 1,
+          top: "", left: ""
+        });
+      }else{
+        var p1=Math.floor(me.Bs.logo.top*me.Bs.scale);
+        var p2=p1+Math.floor(me.Bs.logo.max*me.Bs.scale);
+        var wl=Math.floor(me.Bs.logo.max*me.Bs.scale); var ws=me.Bs.logo.min;
+        if(pos>p2){
+          tp=Math.floor(me.Bs.logo.next*me.Bs.scale+pos-p2);
+          wi=me.Bs.logo.min;
+          lf=Math.floor(me.Bs.wwi-me.Bs.logo.right*me.Bs.scale-ws)+me.Bs.margin;
+        }else if(pos>p1){
+          tp=Math.floor(me.Bs.logo.top*me.Bs.scale
+            +(me.Bs.logo.next-me.Bs.logo.top)*me.Bs.scale*(pos-p1)/(p2-p1));
+          wi=Math.floor(wl-((wl-ws)*(pos-p1)/(p2-p1)));
+          lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right*me.Bs.scale+wi))+me.Bs.margin;
+        }else{
+          tp=Math.floor(me.Bs.logo.top*me.Bs.scale);
+          lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right+me.Bs.logo.max)*me.Bs.scale)+me.Bs.margin;
+          wi=Math.floor(me.Bs.logo.max*me.Bs.scale);
+        }
+        $('#Logo').css({
+          position: 'absolute', top: tp+'px', left: lf+'px', width: wi+'px', 'z-index': 600,
+          bottom: "", right: ""
+        });
+      }
       return;
     };
   },
