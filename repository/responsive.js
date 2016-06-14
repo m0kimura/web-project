@@ -33,11 +33,11 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       $(window).on('scroll', function(){
         var pos=me.scroll(); me.footer('cont', pos); me.section('indicator', pos);
         me.locateSide('cont', pos);
-        me.modal('reset'); me.map('scroll'); me.logo('cont', pos);
+        me.modal('reset'); me.map('scroll'); me.logo('cont', pos); me.elevate('');
       });
 
       me.photoUp(); me.tipup();
-      me.rollover(); me.modal('init'); me.locateSide('init');
+      me.rollover(); me.modal('init'); me.locateSide('init'); me.elcontents();
 
       me.Save.mode=me.Bs.mode;
 
@@ -127,6 +127,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       me.Bs.logo.next=me.Bs.logo.next||430;
       me.Bs.logo.max=me.Bs.logo.max||120;
       me.Bs.logo.min=me.Bs.logo.min||50;
+      me.Bs.elcontents=op.Elcontents||[];
     }
 
 
@@ -583,6 +584,87 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       }
     }
 
+  },
+//
+// logo
+//
+  logo: function(mode, pos){
+    var me=this; var tp, lf, lf, wi;
+    if(!me.Bs.logo.image){return;}
+
+////
+//  molding
+    switch(mode){
+     case 'init':
+      
+      $('body').append('<a href="/index.html"><img id="Logo" src="'+me.Bs.logo.image+'" alt="ロゴマーク"/></a>');
+//      $('body').append('<img id="Logo" src="'+me.Bs.logo.image+'" alt="ロゴマーク"/>');
+      if(me.Bs.mode=='mobile'){
+        wi=me.Bs.logo.min;
+        $('#Logo').css({
+          position: 'fixed', bottom: '10px', right: '10px', width: wi+'px', 'z-index': 1
+        });
+      }else{
+        tp=Math.floor(me.Bs.logo.top*me.Bs.scale);
+        lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right+me.Bs.logo.max)*me.Bs.scale)+me.Bs.margin;
+        wi=Math.floor(me.Bs.logo.max*me.Bs.scale);
+        $('#Logo').css({
+          position: 'absolute', top: tp+'px', left: lf+'px', width: wi+'px', 'z-index': 600
+        });
+      }
+      return;
+////
+//  scroll
+     case 'cont':
+      if(me.Bs.mode=='mobile'){
+        wi=me.Bs.logo.min;
+        $('#Logo').css({
+          position: 'fixed', bottom: '10px', right: '10px', width: wi+'px', 'z-index': 1,
+          top: "", left: ""
+        });
+      }else{
+        var p1=Math.floor(me.Bs.logo.top*me.Bs.scale);
+        var p2=p1+Math.floor(me.Bs.logo.max*me.Bs.scale);
+        var wl=Math.floor(me.Bs.logo.max*me.Bs.scale); var ws=me.Bs.logo.min;
+        if(pos>p2){
+          tp=Math.floor(me.Bs.logo.next*me.Bs.scale+pos-p2);
+          wi=me.Bs.logo.min;
+          lf=Math.floor(me.Bs.wwi-me.Bs.logo.right*me.Bs.scale-ws)+me.Bs.margin;
+        }else if(pos>p1){
+          tp=Math.floor(me.Bs.logo.top*me.Bs.scale
+            +(me.Bs.logo.next-me.Bs.logo.top)*me.Bs.scale*(pos-p1)/(p2-p1));
+          wi=Math.floor(wl-((wl-ws)*(pos-p1)/(p2-p1)));
+          lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right*me.Bs.scale+wi))+me.Bs.margin;
+        }else{
+          tp=Math.floor(me.Bs.logo.top*me.Bs.scale);
+          lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right+me.Bs.logo.max)*me.Bs.scale)+me.Bs.margin;
+          wi=Math.floor(me.Bs.logo.max*me.Bs.scale);
+        }
+        $('#Logo').css({
+          position: 'absolute', top: tp+'px', left: lf+'px', width: wi+'px', 'z-index': 600,
+          bottom: "", right: ""
+        });
+      }
+      return;
+    };
+  },
+//
+//elcontents コンテンツのエレベート
+//
+  elcontents: function(){
+    var me=this; if(me.Bs.elcontents.length<1){return;}
+
+    var i, h, a, c, d;
+
+    for(i in me.Bs.elcontents){
+      c=me.Bs.elcontents[i].click; d=me.Bs.elcontents[i].html;
+      a=me.Bs.elcontents[i].animate||me.Bs.animate;
+      $('#'+c).on('click', function(){
+        if(me.Bs.mode=='mobile'){
+        h=$('#'+d).html(); me.elevate(h, a);
+        return false;
+      }});
+    }
   },
 //
 // cell: セルの幅・高さ調整
@@ -1342,68 +1424,6 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     }
   },
 //
-// logo
-//
-  logo: function(mode, pos){
-    var me=this; var tp, lf, lf, wi;
-    if(!me.Bs.logo.image){return;}
-
-////
-//  molding
-    switch(mode){
-     case 'init':
-      
-      $('body').append('<a href="/index.html"><img id="Logo" src="'+me.Bs.logo.image+'" alt="ロゴマーク"/></a>');
-      if(me.Bs.mode=='mobile'){
-        wi=me.Bs.logo.min;
-        $('#Logo').css({
-          position: 'fixed', bottom: '10px', right: '10px', width: wi+'px', 'z-index': 1
-        });
-      }else{
-        tp=Math.floor(me.Bs.logo.top*me.Bs.scale);
-        lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right+me.Bs.logo.max)*me.Bs.scale)+me.Bs.margin;
-        wi=Math.floor(me.Bs.logo.max*me.Bs.scale);
-        $('#Logo').css({
-          position: 'absolute', top: tp+'px', left: lf+'px', width: wi+'px', 'z-index': 600
-        });
-      }
-      return;
-////
-//  scroll
-     case 'cont':
-      if(me.Bs.mode=='mobile'){
-        wi=me.Bs.logo.min;
-        $('#Logo').css({
-          position: 'fixed', bottom: '10px', right: '10px', width: wi+'px', 'z-index': 1,
-          top: "", left: ""
-        });
-      }else{
-        var p1=Math.floor(me.Bs.logo.top*me.Bs.scale);
-        var p2=p1+Math.floor(me.Bs.logo.max*me.Bs.scale);
-        var wl=Math.floor(me.Bs.logo.max*me.Bs.scale); var ws=me.Bs.logo.min;
-        if(pos>p2){
-          tp=Math.floor(me.Bs.logo.next*me.Bs.scale+pos-p2);
-          wi=me.Bs.logo.min;
-          lf=Math.floor(me.Bs.wwi-me.Bs.logo.right*me.Bs.scale-ws)+me.Bs.margin;
-        }else if(pos>p1){
-          tp=Math.floor(me.Bs.logo.top*me.Bs.scale
-            +(me.Bs.logo.next-me.Bs.logo.top)*me.Bs.scale*(pos-p1)/(p2-p1));
-          wi=Math.floor(wl-((wl-ws)*(pos-p1)/(p2-p1)));
-          lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right*me.Bs.scale+wi))+me.Bs.margin;
-        }else{
-          tp=Math.floor(me.Bs.logo.top*me.Bs.scale);
-          lf=Math.floor(me.Bs.wwi-(me.Bs.logo.right+me.Bs.logo.max)*me.Bs.scale)+me.Bs.margin;
-          wi=Math.floor(me.Bs.logo.max*me.Bs.scale);
-        }
-        $('#Logo').css({
-          position: 'absolute', top: tp+'px', left: lf+'px', width: wi+'px', 'z-index': 600,
-          bottom: "", right: ""
-        });
-      }
-      return;
-    };
-  },
-//
 //
 //
   another: function(mode){
@@ -1869,17 +1889,21 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
   },
 //
-//
+// elevate
 //
   elevate: function(html, animate){
     var me=this; var t, l; animate=animate||me.Bs.animate;
 
-    if(!document.getElementById('#Elevate')){
-      $('body').append('<div id="#Elevate"> </div>');
-      $('#Eclose').on('click', function(){
+    if(!document.getElementById('Elevate')){
+      $('body').append('<div id="Elevate"><img id="Eclose" src="'+me.pngclose+'"/></div>');
+
+      $('#Elevate').on('click', '#Eclose', function(){
         if($('#Elevate').attr('state')=='on'){
-          t=$(window).height(); $('#Elevate').stop(); $('#Elevate').animate({top: t+'px'}, animate);
-          $('#Elevate').attr('state', ''); $('#Elevate').html('');
+          t=$(window).height()+$(window).scrollTop(); $('#Elevate').stop();
+          $('#Elevate').animate({top: t+'px'}, animate, function(){
+            $('#Elevate').attr('state', ''); $('#Elevate').html('');
+            $('#Elevate').css({display: 'none'});
+          });
         }
       });
     }
@@ -1887,14 +1911,18 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       if($('#Elevate').attr('state')=='on'){
         t=$(window).height(); $('#Elevate').css({top: t+'px'});
         $('#Elevate').attr('state', ''); $('#Elevate').html('');
+        $('#Elevate').css({display: 'none'});
       }
     }else{
-      t=$(window).height();
-      $('#Elevate').css({position: 'absolute', top: t+'px', left: 0, 'z-index': 800});
-      $('#Elevate').html('<img id="Eclise" src="'+me.pngclose+'"/>'+html);
+      t=$(window).height()+$(window).scrollTop(); w=$(window).width();
+      me.css($('#Elevate'), {
+        position: 'absolute', top: t+'px', left: 0, outerWidth: w, 'z-index': 800,
+        display: 'block'
+      });
+      $('#Elevate').html('<img id="Eclose" src="'+me.pngclose+'"/>'+html);
       l=$(window).width()-$('#Eclose').outerWidth();
       $('#Eclose').css({position: 'absolute', top: 0, left: l+'px', 'z-index': 810});
-      t=t-$('#Elevate').height();
+      t=t-$('#Elevate').outerHeight();
       $('#Elevate').stop(); $('#Elevate').animate({top: t+'px'}, animate);
       $('#Elevate').attr('state', 'on');
     }
@@ -2028,7 +2056,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     switch(cmd){
      case 'fullHeight':
       return parseInt(obj.css('margin-top'))+parseInt(obj.css('margin-bottom'))+obj.outerHeight();
-     case 'fullEidth':
+     case 'fullWidth':
       return parseInt(obj.css('margin-left'))+parseInt(obj.css('margin-right'))+obj.outerWidth();
     }
   },
