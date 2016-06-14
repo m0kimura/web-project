@@ -362,7 +362,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
     if(mode=='init'){
       $('footer').css({'z-index': 700});
-      $('#Menu').on('click', function(){
+      $('#Menu').on('click', function(){if(me.Bs.mode=='mobile'){
         $('footer').css({top: $('body').scrollTop()});
         $('footer').attr('saveleft', $('footer').css('margin-left'));
         me.modal('set', function(){
@@ -371,7 +371,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
         });
         $('footer').animate({'margin-left': 0}, me.Bs.footer.animate);
         $('footer').attr('ix', 1);
-      });
+      }});
       me.Fdata.footer={area: $('footer'), mode: 'hide', modal: true};
       me.flick(me.Fdata.footer);
 
