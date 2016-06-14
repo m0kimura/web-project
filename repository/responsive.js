@@ -1,4 +1,3 @@
-var _gaq = _gaq || [];
 var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 //
 // begin トリガー
@@ -12,7 +11,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
       me.config(op, 'init'); me.section('init'); me.spanning(); me.ajaxSource();
       me.carousel('init'); me.tabs('init'); me.accordion('init'); me.map('init');
-      me.sns(); me.analytics();
+      me.sns();
       me.depend(); me.image('init'); me.hide();
       me.cell(); me.section('padding'); me.folding('init');
       me.zone(); me.body('init'); me.logo('init');
@@ -1719,7 +1718,9 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 //
   analytics: function(){
     var me=this; var a;
-    if(me.Bs.analytics.account){
+
+//    if(me.Bs.analytics.account){
+    if(false){
       _gaq.push(['_setAccount', me.Bs.analytics.account], ['_setDomainName', me.Bs.domain]);
       a=[]; if(me.Bs.analytics.value){
         a[0]='_setCustomVar'; a[1]=me.Bs.analytics.index;
@@ -1727,14 +1728,18 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
         _gaq.push(a);
       }
       a=[]; if(me.Bs.analytics.vertial){
-        a[0]='_trackPageview'; a[1]=me.Bs.analytics.vertial;
+        a[0]='_trackPageview'; //a[1]=me.Bs.analytics.vertial;
         _gaq.push(a);
       }
+      _gaq.push(['_setCustomVar', 1, 'Section', 'Life & Style', 3]);
+      _gaq.push(['_trackPageview']);
 
-      var ga=document.createElement('script'); ga.type='text/javascript'; ga.async=true;
-      ga.src=('https:' == document.location.protocol ? 'https://ssl' : 'http://www')
-        +'.google-analytics.com/ga.js';
-      var s=document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      window.anlyt=(function(){
+        var ga=document.createElement('script'); ga.type='text/javascript'; ga.async=true;
+        ga.src=('https:' == document.location.protocol ? 'https://ssl' : 'http://www')
+          +'.google-analytics.com/ga.js';
+        var s=document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      });
     }
   },
 //
