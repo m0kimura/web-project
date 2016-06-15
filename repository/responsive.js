@@ -291,7 +291,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 // slidein 右メニュー
 //
   slidein: function(mode){
-    var me=this; if(me.Bs.mode!='mobile'){return;} if(!me.Bs.slidein.use){return;}
+    var me=this; if(!me.Bs.slidein.use){return;}
     
     var l, m;
     switch(mode){
@@ -710,7 +710,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 //elcontents コンテンツのエレベート
 //
   elcontents: function(){
-    var me=this; if(me.Bs.elcontents.length<1){return;}
+    var me=this; if(me.Bs.elcontents.length<1){return;} if(!me.Bs.elcontents[0].click){return;}
 
     var i, h, a, c, d;
 
