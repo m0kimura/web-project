@@ -37,7 +37,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       });
 
       me.photoUp(); me.tipup();
-      me.rollover(); me.modal('init'); me.locateSide('init'); me.elcontents();
+      me.rollover(); me.modal('init'); me.locateSide('init'); me.elcontents(); me.slidein('init');
 
       me.Save.mode=me.Bs.mode;
 
@@ -128,6 +128,8 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       me.Bs.logo.max=me.Bs.logo.max||120;
       me.Bs.logo.min=me.Bs.logo.min||50;
       me.Bs.elcontents=op.Elcontents||[];
+      me.Bs.slidein=op.Slidein||{};
+      me.Bs.slidein.animate=me.Bs.slidein.animate||op.Animate;
     }
 
 
@@ -189,6 +191,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 //
   zone: function(){
     var me=this; var d; var wm, ws, wi, ml, oh, num, wk, l, h, i, t, w, a;
+    me.Save.slidein=me.Save.slidein||{}; me.Save.slidein.on=false;
 ////
 //    padding
     var padding=function(wi){
@@ -207,7 +210,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
 
     if(me.Bs.mode=='mobile'){
       wm=$(window).width();
-      $('#Side').css({display: 'none'});
+//      $('#Side').css({display: 'none'});
       if(me.Bs.section.mobile=='horizontal'){
         wk=padding(wm);
         l=0; h=0; i=0; num=0; $('#Content').find('section').each(function(){
@@ -225,7 +228,16 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
         });
         me.css('#Content', {outerWidth: wm, outerHeight: t+'px'});
       }
-      $('#Side').css({height: 0});
+      oh=$('#Content').outerHeight();
+      if($('#Side').outerHeight()>oh){oh=$('#Side').outerHeight();}
+      me.css("#Content", {position: "absolute", top: 0, left: 0, outerWidth: wm,
+        outerHeight: oh
+      });
+      me.css("#Side", {
+        display: 'none', position: "absolute", top: 0, left: wm+"px", outerWidth: ws,
+        outerHeight: oh, 'margin-left': 0
+      });
+//      $('#Side').css({height: 0});
 
     }else{
       if(wi-me.Bs.minSide>me.Bs.maxMain){ws=wi-me.Bs.maxMain;}else{ws=me.Bs.minSide;}
@@ -264,7 +276,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       });
       me.css("#Side", {
         display: 'block', position: "absolute", top: 0, left: wm+"px", outerWidth: ws,
-        outerHeight: oh
+        outerHeight: oh, 'margin-left': 0
       });
     }
 
@@ -274,6 +286,52 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       me.Save.zone=true;
     }}
 
+  },
+//
+// slidein 右メニュー
+//
+  slidein: function(mode){
+    var me=this; if(me.Bs.mode!='mobile'){return;} if(!me.Bs.slidein.use){return;}
+    
+    var l, m;
+    switch(mode){
+     case 'init':
+      me.Save.slidein=me.Save.slidein||{}; me.Save.slidein.on=false;
+      $('#Logo').on('click', function(){
+        if(me.Bs.mode!='mobile'){return;}
+        if(me.Save.slidein.on){
+          me.Save.slidein.on=false;
+          l=$(window).width();
+          $('#Side').stop();
+          $('#Side').animate({'margin-left': 0}, me.Bs.slidein.animate, function(){
+            $('#Side').css({display: 'none', 'z-index': 1, left: 0});
+          });
+        }else{
+          me.Save.slidein.on=true;
+          l=$(window).width(); 
+          $('#Side').css({
+            display: 'block', 'z-index': 700, position: 'absolute', top: 0, left: l+'px'
+          });
+          m=$('#Side').outerWidth()*-1;
+          $('#Side').stop();
+          $('#Side').animate({'margin-left': m+'px'}, me.Bs.slidein.animate);
+        }
+        return false;
+      });
+      me.Fdata.slidein={area: $('#Side'), mode: 'hider', modal: true};
+      me.flick(me.Fdata.slidein, function(){
+        $('#Side').css({display: 'none', 'z-index': 1, left: 0});
+        me.Save.slidein.on=false;
+      });
+      return;
+     case 'out':
+      l=$(window).width();
+      $('#Side').stop();
+      $('#Side').animate({'margin-left': 0}, me.Bs.slidein.animate,function(){
+        $('#Side').css({display: 'none', 'z-index': 1});
+      });
+      return false;
+    }
   },
 //
 // body フレームワーク
@@ -1808,6 +1866,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     indicator=indicator||function(){};         // インディケーター表示アクション
 
     if(data.mode=='hide'){data.max=2; data.ix=1;}
+    if(data.mode=='hider'){data.max=2; data.ix=2;}
     $(data.area).attr('ix', data.ix);
     if(data.move>0){
       if(data.ix>data.max){return;}
@@ -1879,9 +1938,11 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
             data.ix--; if(data.ix<1){data.ix=1;}
             if(data.modal){me.modal('clear');}
           }
-          var d=data.wi*(data.ix-1)*-1;
+          var d=data.wi*(data.ix-1)*-1; if(data.mode=='hider'){d=0;}
           data.object.stop();
-          data.object.animate({'margin-left': d}, data.animate); indicator(data);
+          data.object.animate({'margin-left': d}, data.animate, function(){
+            indicator(data);
+          });
           data.area.attr('ix', data.ix);
         }
       }
@@ -1960,6 +2021,13 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       });
       t=$(window).scrollTop(); l=$(window).width()-$('#Mclose').width();
       $('#Mclose').css({display: 'block', top: t+'px', left: l+'px'});
+      me.Save.proc=proc;
+      break;
+     case 'paste':
+      proc=proc||function(){};
+      $('#Modal').css({
+        display: 'block', width: $(document).width()+'px', height: $(document).height()+'px',
+      });
       me.Save.proc=proc;
       break;
      case 'clear':
