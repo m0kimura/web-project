@@ -587,9 +587,13 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       }
     });
                                             // モバイル100%
-    $('.PhotoM, .PhotoU, photoM, photoU').each(function(){
+    $('.PhotoM, .photoM').each(function(){
       if(me.Bs.mode=='mobile'){w='100%';}else{w=me.Bs.image.photoM;}
       $(this).css({width: w});
+    });
+    $('.PhotoU, .photoU').each(function(){
+      if(me.Bs.mode=='mobile'){w='100%';}else{w=me.Bs.image.photoM;}
+      $(this).css({width: w, cursor: 'w-resize'});
     });
                                             // ２段階調整
     $('.PhotoC').each(function(){
