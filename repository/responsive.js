@@ -124,9 +124,9 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       me.Bs.logo=op.Logo||{};
       me.Bs.logo.right=me.Bs.logo.right||20;
       me.Bs.logo.top=me.Bs.logo.top||300;
-      me.Bs.logo.next=me.Bs.logo.next||430;
+      me.Bs.logo.next=me.Bs.logo.next||me.Bs.logo.top;
       me.Bs.logo.max=me.Bs.logo.max||120;
-      me.Bs.logo.min=me.Bs.logo.min||50;
+      me.Bs.logo.min=me.Bs.logo.min||me.Bs.logo.max;
       me.Bs.elcontents=op.Elcontents||[];
       me.Bs.slidein=op.Slidein||{};
       me.Bs.slidein.animate=me.Bs.slidein.animate||op.Animate;
@@ -1960,7 +1960,7 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
     var me=this; var t, l; animate=animate||me.Bs.animate;
 
     if(!document.getElementById('Elevate')){
-      $('body').append('<div id="Elevate"><img id="Eclose" src="'+me.pngclose+'"/></div>');
+      $('body').append('<div id="Elevate" style="display: none;"><img id="Eclose" src="'+me.pngclose+'"/></div>');
 
       $('#Elevate').on('click', '#Eclose', function(){
         if($('#Elevate').attr('state')=='on'){
