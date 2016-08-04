@@ -39,6 +39,8 @@ var RES={Bs: {}, Save: {}, Sec: [], Fdata: {},
       me.photoUp(); me.tipup();
       me.rollover(); me.modal('init'); me.locateSide('init'); me.elcontents(); me.slidein('init');
 
+      var x=location.hash; if(x){me.section('goto', x);}
+
       me.Save.mode=me.Bs.mode;
 
     });
